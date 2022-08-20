@@ -634,7 +634,6 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 }
             } else {
                 event.setRespawnLocation(worldPlayerDataManager.get(world).getRespawnLocation(p,true));
-                p.sendMessage(Main.ingameprefix + Main.fontcolor + "Respawned");
             }
         }
     }
