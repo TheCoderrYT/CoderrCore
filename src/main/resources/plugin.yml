@@ -1,0 +1,54 @@
+name: CoderrCore
+version: '${project.version}'
+main: de.coderr.core.Main
+api-version: 1.18
+prefix: CoderrCore
+authors: [ TheCoderr ]
+loadbefore:
+  - CoderrTimer
+  - CoderrKnockFFA
+  - CoderrMobDuplicator
+website: www.foerster.cologne
+commands:
+  rank:
+    description: Change the rank of a player
+    usage: /rank [set|remove] [playername] [ranklevel]
+  permissions:
+    description: Shows the permissions of the player
+    usage: /permissions
+  testworld:
+    description: Teleport the player to a testworld
+    usage: /testworld
+  invsee:
+    description: Open an inventory of a player
+    usage: /invsee [Playername]
+  lobby:
+    description: Teleport the player to the lobby
+    usage: /lobby
+  l:
+    description: Teleport the player to the lobby
+    usage: /l
+  world:
+    description: Teleport the player to the world
+    usage: /world [weltname|create|info] [weltname] [gamemode] [welttyp] [difficulty] [hardcore] [nether] [the_end] [damage] [saturation]
+  teleporter:
+    description: Set a block as a teleporter
+    usage: /teleporter [world|x] [y] [z]
+  settings:
+    description: Open a settings menu for the world
+    usage: /settings
+  defaultgamemode:
+    description: Set the gamemode of a player to the defaultgamemode of the world
+    usage: /defaultgamemode
+  worlds:
+    description: Open an inventory to teleport to worlds
+    usage: /worlds
+  friend:
+    description: Open an inventory to configurate friends
+    usage: /friend
+  maintrance:
+    description: Enable the maintrance mode
+    usage: /maintrance
+  pos:
+    description: Send the Position of the Player in the chat
+    usage: /pos <description>
