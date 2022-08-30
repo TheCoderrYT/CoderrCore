@@ -557,6 +557,9 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
 
     public void onDisable() {
         for (Player a : Bukkit.getOnlinePlayers()) {
+            if (a.isDead()) {
+                a.spigot().respawn();
+            }
             World lobby = Bukkit.getWorld(Main.instance.getConfig().getString("world.lobby"));
             World world = Bukkit.getWorlds().get(0);
             World world_nether = Bukkit.getWorld(Bukkit.getWorlds().get(0).getName()+"_nether");

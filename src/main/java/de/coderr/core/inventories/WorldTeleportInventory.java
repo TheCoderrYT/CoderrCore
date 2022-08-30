@@ -8,6 +8,8 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,6 +20,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,7 +73,17 @@ public class WorldTeleportInventory implements Listener, CommandExecutor {
 
         for (World w : Bukkit.getWorlds()) {
             if (!w.getName().contains("_nether") && !w.getName().contains("_the_end") && !w.getName().equals(Main.instance.getConfig().getString("world.lobby")) && !w.getName().equals(Main.instance.getConfig().getString("world.testworld"))) {
-                setItem(inv,slot,Material.GRASS_BLOCK,Main.themecolor+w.getName(), ChatColor.GRAY+"(Rechtsklick zum Teleportieren)");
+                boolean knockffa = false;
+                if (Bukkit.getPluginManager().isPluginEnabled("CoderrKnockFFA")) {
+                    if (!Bukkit.getPluginManager().getPlugin("CoderrKnockFFA").getConfig().getString("worlds." + w.getName()).equals("false")) {
+                        knockffa = true;
+                    }
+                }
+                if (knockffa) {
+                    setItem(inv, slot, Material.STICK, Main.themecolor + w.getName(), ChatColor.GRAY + "(Rechtsklick zum Teleportieren)");
+                } else {
+                    setItem(inv, slot, Material.GRASS_BLOCK, Main.themecolor + w.getName(), ChatColor.GRAY + "(Rechtsklick zum Teleportieren)");
+                }
                 slotWorldMap.put(slot,w);
                 slot++;
             }
@@ -81,6 +95,9 @@ public class WorldTeleportInventory implements Listener, CommandExecutor {
     private void setItem(Inventory inv, int index, Material material, String name, String lore) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
+        if (material == Material.STICK) {
+            meta.addEnchant(Enchantment.KNOCKBACK,1,true);
+        }
         meta.setDisplayName(name);
         if (lore != null) { meta.setLore(Arrays.asList(lore.split("\n"))); }
         item.setItemMeta(meta);
