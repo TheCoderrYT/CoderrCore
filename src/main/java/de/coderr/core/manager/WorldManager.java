@@ -578,9 +578,9 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
             Block b = event.getClickedBlock();
             if (b.getType().toString().contains("BED") && b.getType() != Material.BEDROCK) {
                 if (p.getWorld().getEnvironment() != World.Environment.NETHER && p.getWorld().getEnvironment() != World.Environment.THE_END) {
-                    if (worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockX() == event.getClickedBlock().getLocation().getBlockX()
-                        && worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockY() == event.getClickedBlock().getLocation().getBlockY()
-                        && worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockZ() == event.getClickedBlock().getLocation().getBlockZ()) {
+                    if (worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockX() != b.getLocation().getBlockX()
+                        || worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockY() != b.getLocation().getBlockY()+1
+                        || worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockZ() != b.getLocation().getBlockZ()) {
                         p.sendMessage(Main.ingameprefix + Main.fontcolor + "Respawnpunkt wurde gesetzt.");
                     }
                     worldPlayerDataManager.get(world).setStoredRespawnLocation(p, event.getClickedBlock().getLocation(),1);
@@ -589,9 +589,9 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 if (p.getWorld().getEnvironment() == World.Environment.NETHER) {
                     RespawnAnchor respawnAnchor = (RespawnAnchor) b.getBlockData();
                     if (0 < respawnAnchor.getCharges() && p.getItemInHand().getType() == Material.AIR){
-                        if (worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockX() == event.getClickedBlock().getLocation().getBlockX()
-                                && worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockY() == event.getClickedBlock().getLocation().getBlockY()
-                                && worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockZ() == event.getClickedBlock().getLocation().getBlockZ()) {
+                        if (worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockX() != event.getClickedBlock().getLocation().getBlockX()
+                                || worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockY() != event.getClickedBlock().getLocation().getBlockY()+1
+                                || worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockZ() != event.getClickedBlock().getLocation().getBlockZ()) {
                             p.sendMessage(Main.ingameprefix + Main.fontcolor + "Respawnpunkt wurde gesetzt.");
                         }
                         worldPlayerDataManager.get(world).setStoredRespawnLocation(p, event.getClickedBlock().getLocation(),2);
