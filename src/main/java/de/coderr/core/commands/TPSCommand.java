@@ -34,7 +34,7 @@ public class TPSCommand implements CommandExecutor
         if (tps < 17.5 || tps > 22) {
             if (warningCooldown == 0) {
                 for (Player a : Bukkit.getOnlinePlayers()) {
-                    a.sendMessage(ChatColor.YELLOW + "Warnung: Es entstehen Lags!");
+                    a.sendMessage(ChatColor.DARK_GRAY + "[" + ChatColor.YELLOW + "Debug" + ChatColor.DARK_GRAY + "] " + ChatColor.YELLOW + "Achtung: Es entstehen Lags!");
                 }
                 warningCooldown = 8;
             }
