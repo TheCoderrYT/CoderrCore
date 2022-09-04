@@ -229,7 +229,6 @@ public class PlayerDataManager
                 }
 
             }
-            file.delete();
         } catch (Exception ignored) {
             System.err.println(Main.consoleprefix +"PlayerDataManager: Fehler beim Laden der Spielerdaten");
         }
@@ -238,6 +237,9 @@ public class PlayerDataManager
     public void save()
     {
         try {
+            if (file.exists()) {
+                file.delete();
+            }
             YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
             boolean contains = false;
             for (Map.Entry<String, String> entry : playerLocations.entrySet()) {
