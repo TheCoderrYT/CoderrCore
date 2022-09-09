@@ -210,8 +210,12 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                     creator.environment(World.Environment.THE_END);
                     Bukkit.createWorld(creator);
                 }
-                Bukkit.getWorld(worldName+"_nether").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS,false);
-                Bukkit.getWorld(worldName+"_the_end").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS,false);
+                if (Bukkit.getWorld(worldName+"_nether") != null) {
+                    Bukkit.getWorld(worldName + "_nether").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+                }
+                if (Bukkit.getWorld(worldName+"_the_end") != null) {
+                    Bukkit.getWorld(worldName + "_the_end").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+                }
                 System.out.println(Main.consoleprefix + "" + worldName + " wurde erfolgreich geladen");
             }
         }
