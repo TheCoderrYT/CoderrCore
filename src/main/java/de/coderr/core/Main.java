@@ -52,6 +52,7 @@ public final class Main extends JavaPlugin {
     public static SignListener signListener;
     public static BedListener bedListener;
     public static ChatListener chatListener;
+    public static PlayerVoidListener playerVoidListener;
 
     public static WorldSettingsInventory worldSettingsInventory;
     public static LobbyInventory lobbyInventory;
@@ -129,6 +130,7 @@ public final class Main extends JavaPlugin {
         friendsInventory = new FriendsInventory();
         signListener = new SignListener();
         worldTeleportInventory = new WorldTeleportInventory();
+        playerVoidListener = new PlayerVoidListener();
 
         Bukkit.getPluginManager().registerEvents(joinListener,this);
         Bukkit.getPluginManager().registerEvents(leaveListener,this);
@@ -148,6 +150,7 @@ public final class Main extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(worldTeleportInventory,this);
         Bukkit.getPluginManager().registerEvents(friendsInventory,this);
         Bukkit.getPluginManager().registerEvents(signListener,this);
+        Bukkit.getPluginManager().registerEvents(playerVoidListener,this);
 
         Objects.requireNonNull(this.getCommand("world")).setExecutor(worldManager);
         Objects.requireNonNull(this.getCommand("world")).setTabCompleter(worldManager);

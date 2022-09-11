@@ -27,6 +27,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.util.Vector;
 
 import java.io.File;
 import java.io.IOException;
@@ -673,8 +674,8 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
         if (event.getPlayer().getWorld().getName().equals(Main.instance.getConfig().getString("world.lobby"))) {
-            if (event.getTo().getY() < 0) {
-                event.getPlayer().teleport(new Location(event.getPlayer().getWorld(), event.getPlayer().getWorld().getSpawnLocation().getX() + 0.5,event.getPlayer().getWorld().getSpawnLocation().getY(),event.getPlayer().getWorld().getSpawnLocation().getZ() + 0.5));
+            if (event.getTo().getY() < 10) {
+                event.getPlayer().setVelocity(event.getPlayer().getLocation().getDirection().multiply(3).add(new Vector(0,10,0))); // max velocity is 10
             }
         }
     }
