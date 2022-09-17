@@ -64,6 +64,8 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
             for (String worldName : configuration.getKeys(false)) {
                 if (Bukkit.getWorlds().get(0).getName().equals(worldName)) {
                     if (!configuration.contains(worldName + ".datafile")) { configuration.set(worldName + ".datafile", ""+worldName + "_data.yml"); }
+                    if (!configuration.contains(worldName+".gamemode")) { configuration.set(worldName+".gamemode", Bukkit.getDefaultGameMode().toString()); }
+                    if (!configuration.contains(worldName+".difficulty")) { configuration.set(worldName+".difficulty", Bukkit.getWorlds().get(0).getDifficulty().toString()); }
                     if (!configuration.contains(worldName + ".damage")) {
                         configuration.set(worldName + ".damage", true);
                     }
@@ -557,7 +559,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                     p.setGameMode(GameMode.valueOf(configuration.getString(p.getWorld().getName() + ".gamemode")));
                 } catch (Exception ignored) { }
             }
-        }, 10);
+        }, 20);
     }
 
 

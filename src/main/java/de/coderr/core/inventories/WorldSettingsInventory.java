@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -23,7 +24,8 @@ import java.util.Map;
 
 public class WorldSettingsInventory implements Listener, CommandExecutor
 {
-    File file = new File("plugins//Tablist//worlds.yml");
+    String configPath = "plugins//CoderrCore//worlds.yml";
+    File file = new File(configPath);
     YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
     private Map<World,Inventory> invs = new HashMap<>();
     private Map<Integer,ItemStack> items = new HashMap<>();
@@ -49,6 +51,7 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
         if (sender instanceof Player) {
             Player p = (Player) sender;
             if (command.getName().equals("settings")) {
+                updateInventory(p.getWorld());
                 p.openInventory(invs.get(Bukkit.getWorld(p.getWorld().getName().replace("_nether","").replace("_the_end",""))));
             } else if (command.getName().equals("defaultgamemode")) {
                 p.setGameMode(GameMode.valueOf(configuration.getString(p.getWorld().getName()+".gamemode")));
@@ -84,7 +87,8 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
                         p.sendMessage(ChatColor.RED+"Der Weltspawnpunkt kann nur in der Oberwelt gesetzt werden");
                     }
                 }
-                else if (event.getSlot() == 11) {
+                else if (event.getSlot() == 11) // Gamemode
+                {
                     int i = 0;
                     switch (getDefaultGamemode(world)) {
                         case ADVENTURE:
@@ -101,19 +105,23 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
                     if (i > 3) {
                         i = 0;
                     }
-                    switch (i) {
-                        case 0:
-                            configuration.set(world.getName() + ".gamemode", "SURVIVAL");
-                            break;
-                        case 1:
-                            configuration.set(world.getName() + ".gamemode", "ADVENTURE");
-                            break;
-                        case 2:
-                            configuration.set(world.getName() + ".gamemode", "CREATIVE");
-                            break;
-                        case 3:
-                            configuration.set(world.getName() + ".gamemode", "SPECTATOR");
-                            break;
+                    try {
+                        switch (i) {
+                            case 0:
+                                configuration.set(world.getName() + ".gamemode", "SURVIVAL");
+                                break;
+                            case 1:
+                                configuration.set(world.getName() + ".gamemode", "ADVENTURE");
+                                break;
+                            case 2:
+                                configuration.set(world.getName() + ".gamemode", "CREATIVE");
+                                break;
+                            case 3:
+                                configuration.set(world.getName() + ".gamemode", "SPECTATOR");
+                                break;
+                        }
+                    } catch (Exception e) {
+                        System.out.println(Main.consoleprefix + "Gamemode-Einstellung konnte nicht gespeichert werden.");
                     }
                 /*
                 for (Player a : Bukkit.getOnlinePlayers()) {
@@ -126,7 +134,9 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
                     }
                 }
                 */
-                } else if (event.getSlot() == 12) {
+                }
+                else if (event.getSlot() == 12) // Difficulty
+                {
                     int i = 0;
                     switch (world.getDifficulty()) {
                         case EASY:
@@ -143,6 +153,8 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
                     if (i > 3) {
                         i = 0;
                     }
+                    configuration = YamlConfiguration.loadConfiguration(file);
+                    System.out.println(configuration.get(world.getName() + ".difficulty"));
                     if (configuration.get(world.getName() + ".difficulty") != null) {
                         switch (i) {
                             case 0:
@@ -159,8 +171,12 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
                                 break;
                         }
                         try {
+                            System.out.println("Test1");
                             configuration.save(file);
+                            System.out.println("Test2");
+                            configuration = YamlConfiguration.loadConfiguration(file);
                         } catch (IOException ignored) {
+                            System.out.println(Main.consoleprefix + "Speichern der Difficulty-Einstellung fehlgeschlagen.");
                         }
                         world.setDifficulty(Difficulty.valueOf(configuration.getString(world.getName() + ".difficulty")));
                         if (world_nether != null) {
@@ -169,7 +185,11 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
                         if (world_the_end != null) {
                             world_the_end.setDifficulty(Difficulty.valueOf(configuration.getString(world.getName() + ".difficulty")));
                         }
-                    } else {
+                    }
+                    else {
+                        System.out.println(Main.consoleprefix+"Fehler beim Speichern der Difficulty-Einstellung.");
+                    }/*
+                     else {
                         switch (i) {
                             case 0:
                                 world.setDifficulty(Difficulty.PEACEFUL);
@@ -208,7 +228,8 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
                                 }
                                 break;
                         }
-                    }
+                     }
+                     */
                 }
                 else if (event.getSlot() == 13) {
                     world.setPVP(!world.getPVP());
@@ -253,14 +274,16 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
                     }
                 }
             } else {
-                p.sendMessage(ChatColor.RED + "Du hast nicht die passenden Rechte");
+                p.sendMessage(Main.ingameprefix + ChatColor.RED + "Du hast nicht die passenden Rechte");
             }
             try {
                 configuration.save(file);
+                configuration = YamlConfiguration.loadConfiguration(file);
             } catch (IOException ignored) {
+                System.out.println(Main.consoleprefix + "Einstellungen für "+world.getName()+" konnten nicht gespeichert werden.");
             }
             Main.instance.worldManager.updateConfig();
-            file = new File("plugins//Tablist//worlds.yml");
+            file = new File(configPath);
             configuration = YamlConfiguration.loadConfiguration(file);
             updateInventory(world);
             event.setCancelled(true);
@@ -346,9 +369,6 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
     private GameMode getDefaultGamemode(World w) {
         if (w.getName().contains("_nether") || w.getName().contains("_the_end")) {
             w = Bukkit.getWorld(w.getName().replace("_nether","").replace("_the_end","").trim());
-        }
-        if (Bukkit.getWorlds().get(0) == w) {
-            return Bukkit.getDefaultGameMode();
         }
         if (configuration.contains(w.getName()+".gamemode")) {
             return GameMode.valueOf(configuration.getString(w.getName()+".gamemode"));

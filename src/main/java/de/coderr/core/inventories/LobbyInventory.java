@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -61,6 +62,12 @@ public class LobbyInventory implements Listener
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
+        if (event.getPlayer().getWorld() == Bukkit.getWorld(Main.instance.getConfig().getString("world.lobby"))) {
+            setInv(event.getPlayer());
+        }
+    }
+    @EventHandler
+    public void onWorldChange(PlayerChangedWorldEvent event) {
         if (event.getPlayer().getWorld() == Bukkit.getWorld(Main.instance.getConfig().getString("world.lobby"))) {
             setInv(event.getPlayer());
         }
