@@ -36,7 +36,7 @@ public class TPSCommand implements CommandExecutor
         if (tps < 17.5 || tps > 22) {
             if (warningCooldown == 0) {
                 for (Player a : Bukkit.getOnlinePlayers()) {
-                    a.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.DARK_GRAY + "[" + ChatColor.YELLOW + "Debug" + ChatColor.DARK_GRAY + "] " + ChatColor.YELLOW + "Achtung: Es entstehen Lags!"));
+                    a.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.YELLOW + "" + ChatColor.BOLD + "WARNUNG: ES ENTSTEHEN LAGS!"));
                 }
                 warningCooldown = 3;
             }

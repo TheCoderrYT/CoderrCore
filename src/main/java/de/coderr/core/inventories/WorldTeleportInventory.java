@@ -88,6 +88,8 @@ public class WorldTeleportInventory implements Listener, CommandExecutor {
                     } else {
                         setItem(inv, worldsconfiguration.getInt(worldname + ".slot"), Material.GRASS_BLOCK, Main.themecolor + worldname, ChatColor.GRAY + "(Rechtsklick zum Teleportieren)");
                     }
+                } else {
+                    setItem(inv, worldsconfiguration.getInt(worldname + ".slot"), Material.GRASS_BLOCK, Main.themecolor + worldname, ChatColor.GRAY + "(Rechtsklick zum Teleportieren)");
                 }
             }
         }
@@ -191,8 +193,12 @@ public class WorldTeleportInventory implements Listener, CommandExecutor {
                         p.sendMessage(Main.ingameprefix + "Du hast nicht die passenden Rechte.");
                     }
                 } else if (args[0].equals("reset")) {
-                    setupInv();
-                    p.sendMessage(Main.ingameprefix + "Inventar wurde zurückgesetzt.");
+                    if (p.isOp()) {
+                        setupInv();
+                        p.sendMessage(Main.ingameprefix + "Inventar wurde zurückgesetzt.");
+                    } else {
+                        p.sendMessage(Main.ingameprefix + "Du hast nicht die passenden Rechte.");
+                    }
                 }
             }
         }
