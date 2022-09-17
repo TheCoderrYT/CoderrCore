@@ -26,6 +26,7 @@ import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
@@ -56,16 +57,19 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
         file = new File("plugins//CoderrCore//worlds.yml");
         configuration = YamlConfiguration.loadConfiguration(file);
         try {
-            configuration.options().header("Weltname: Speicherdateiname");
+            configuration.options().header("Gespeicherte Welten");
             configuration.save(file);
             if (!configuration.contains(Bukkit.getWorlds().get(0).getName())) { configuration.set(Bukkit.getWorlds().get(0).getName(),"Laden..."); }
             if (!configuration.contains(main.getConfig().getString("world.lobby"))) { configuration.set(main.getConfig().getString("world.lobby"),"Laden..."); }
             if (!configuration.contains(main.getConfig().getString("world.testworld"))) { configuration.set(main.getConfig().getString("world.testworld"),"Laden..."); }
+            int slot = 10;
             for (String worldName : configuration.getKeys(false)) {
+                if (!configuration.contains(worldName + ".datafile")) { configuration.set(worldName + ".datafile", ""+worldName + "_data.yml"); }
+                if (!configuration.contains(worldName+".gamemode")) { configuration.set(worldName+".gamemode", Bukkit.getDefaultGameMode().toString()); }
+                if (!configuration.contains(worldName+".difficulty")) { configuration.set(worldName+".difficulty", Bukkit.getWorlds().get(0).getDifficulty().toString()); }
+                if (!configuration.contains(worldName+".slot")) { configuration.set(worldName+".slot", slot); }
+                slot++;
                 if (Bukkit.getWorlds().get(0).getName().equals(worldName)) {
-                    if (!configuration.contains(worldName + ".datafile")) { configuration.set(worldName + ".datafile", ""+worldName + "_data.yml"); }
-                    if (!configuration.contains(worldName+".gamemode")) { configuration.set(worldName+".gamemode", Bukkit.getDefaultGameMode().toString()); }
-                    if (!configuration.contains(worldName+".difficulty")) { configuration.set(worldName+".difficulty", Bukkit.getWorlds().get(0).getDifficulty().toString()); }
                     if (!configuration.contains(worldName + ".damage")) {
                         configuration.set(worldName + ".damage", true);
                     }
@@ -77,9 +81,6 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                     if (main.getConfig().getString("world.testworld").equals(worldName)) {
                         if (!configuration.contains(worldName+".loadOnStart")) { configuration.set(worldName+".loadOnStart",false); }
                     }
-                    if (!configuration.contains(worldName + ".datafile")) { configuration.set(worldName + ".datafile", ""+worldName + "_data.yml"); }
-                    if (!configuration.contains(worldName+".gamemode")) { configuration.set(worldName+".gamemode", Bukkit.getDefaultGameMode().toString()); }
-                    if (!configuration.contains(worldName+".difficulty")) { configuration.set(worldName+".difficulty", Bukkit.getWorlds().get(0).getDifficulty().toString()); }
                     if (!configuration.contains(worldName+".hardcore")) { configuration.set(worldName+".hardcore", false); }
                     if (!configuration.contains(worldName+".saturation")) { configuration.set(worldName+".saturation",false); }
                     if (!configuration.contains(worldName+".damage")) { configuration.set(worldName+".damage", true); }

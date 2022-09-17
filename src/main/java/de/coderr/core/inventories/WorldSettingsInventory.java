@@ -154,7 +154,6 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
                         i = 0;
                     }
                     configuration = YamlConfiguration.loadConfiguration(file);
-                    System.out.println(configuration.get(world.getName() + ".difficulty"));
                     if (configuration.get(world.getName() + ".difficulty") != null) {
                         switch (i) {
                             case 0:
@@ -171,9 +170,7 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
                                 break;
                         }
                         try {
-                            System.out.println("Test1");
                             configuration.save(file);
-                            System.out.println("Test2");
                             configuration = YamlConfiguration.loadConfiguration(file);
                         } catch (IOException ignored) {
                             System.out.println(Main.consoleprefix + "Speichern der Difficulty-Einstellung fehlgeschlagen.");
@@ -188,48 +185,7 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
                     }
                     else {
                         System.out.println(Main.consoleprefix+"Fehler beim Speichern der Difficulty-Einstellung.");
-                    }/*
-                     else {
-                        switch (i) {
-                            case 0:
-                                world.setDifficulty(Difficulty.PEACEFUL);
-                                if (world_nether != null) {
-                                    world_nether.setDifficulty(Difficulty.PEACEFUL);
-                                }
-                                if (world_the_end != null) {
-                                    world_the_end.setDifficulty(Difficulty.PEACEFUL);
-                                }
-                                break;
-                            case 1:
-                                world.setDifficulty(Difficulty.EASY);
-                                if (world_nether != null) {
-                                    world_nether.setDifficulty(Difficulty.EASY);
-                                }
-                                if (world_the_end != null) {
-                                    world_the_end.setDifficulty(Difficulty.EASY);
-                                }
-                                break;
-                            case 2:
-                                world.setDifficulty(Difficulty.NORMAL);
-                                if (world_nether != null) {
-                                    world_nether.setDifficulty(Difficulty.NORMAL);
-                                }
-                                if (world_the_end != null) {
-                                    world_the_end.setDifficulty(Difficulty.NORMAL);
-                                }
-                                break;
-                            case 3:
-                                world.setDifficulty(Difficulty.HARD);
-                                if (world_nether != null) {
-                                    world_nether.setDifficulty(Difficulty.HARD);
-                                }
-                                if (world_the_end != null) {
-                                    world_the_end.setDifficulty(Difficulty.HARD);
-                                }
-                                break;
-                        }
-                     }
-                     */
+                    }
                 }
                 else if (event.getSlot() == 13) {
                     world.setPVP(!world.getPVP());

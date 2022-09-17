@@ -1,6 +1,8 @@
 package de.coderr.core.commands;
 
 import de.coderr.core.manager.LagManager;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -12,7 +14,7 @@ import java.text.DecimalFormat;
 
 public class TPSCommand implements CommandExecutor
 {
-    private int warningCooldown = 8;
+    private int warningCooldown = 3;
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -34,9 +36,9 @@ public class TPSCommand implements CommandExecutor
         if (tps < 17.5 || tps > 22) {
             if (warningCooldown == 0) {
                 for (Player a : Bukkit.getOnlinePlayers()) {
-                    a.sendMessage(ChatColor.DARK_GRAY + "[" + ChatColor.YELLOW + "Debug" + ChatColor.DARK_GRAY + "] " + ChatColor.YELLOW + "Achtung: Es entstehen Lags!");
+                    a.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.DARK_GRAY + "[" + ChatColor.YELLOW + "Debug" + ChatColor.DARK_GRAY + "] " + ChatColor.YELLOW + "Achtung: Es entstehen Lags!"));
                 }
-                warningCooldown = 8;
+                warningCooldown = 3;
             }
             else
             {

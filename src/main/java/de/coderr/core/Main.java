@@ -100,7 +100,7 @@ public final class Main extends JavaPlugin {
         themecolor = ChatColor.valueOf(this.getConfig().getString("theme.primarycolor"));
         fontcolor = ChatColor.valueOf(this.getConfig().getString("theme.fontcolor"));
         consoleprefix = "[CoderrCore] ";
-        ingameprefix = ChatColor.DARK_GRAY + "[" + themecolor + "Server" + ChatColor.DARK_GRAY + "] " + ChatColor.RESET;
+        ingameprefix = ChatColor.DARK_GRAY + "[" + themecolor + "Server" + ChatColor.DARK_GRAY + "] " + ChatColor.GRAY;
 
         DateTimeFormatter dtf4 = DateTimeFormatter.ofPattern("HH:mm");
         startuptime = dtf4.format(LocalDateTime.now());
@@ -129,7 +129,6 @@ public final class Main extends JavaPlugin {
         worldTeleportInventory = new WorldTeleportInventory();
         friendsInventory = new FriendsInventory();
         signListener = new SignListener();
-        worldTeleportInventory = new WorldTeleportInventory();
         playerVoidListener = new PlayerVoidListener();
 
         Bukkit.getPluginManager().registerEvents(joinListener,this);
@@ -190,7 +189,8 @@ public final class Main extends JavaPlugin {
             a.kickPlayer(themecolor + "Der Server fährt nun herunter.\n" + themecolor + "Die aktuellen Onlinezeiten sind: " + startuptime + " - " + this.getConfig().getString("shutdown.time"));
         }
         afkListener.setRun(false);
-        worldManager.store();
         tablistManager.stopTimer();
+        worldManager.store();
+        worldTeleportInventory.saveInventory();
     }
 }
