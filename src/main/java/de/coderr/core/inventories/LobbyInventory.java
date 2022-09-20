@@ -25,6 +25,7 @@ public class LobbyInventory implements Listener
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
+        event.getPlayer().updateInventory();
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (containsItem(event.getPlayer(),event.getPlayer().getItemInHand())) {
                 Player p = event.getPlayer();

@@ -25,8 +25,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.*;
-import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
@@ -41,6 +39,8 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
     YamlConfiguration configuration;
 
     Map<World, PlayerDataManager> worldPlayerDataManager = new HashMap<>();
+    Map<String, Location> playerCurrentWorld = new HashMap<>();
+    List<Player> proceedPlayer = new ArrayList<>();
 
     public WorldManager() {
         Main main = Main.instance;
@@ -124,6 +124,8 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                     }
                 }
             }
+
+            loadCurrentWorlds();
         } catch (IOException ignored) { }
     }
 
@@ -246,6 +248,14 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                         }
                     } else if (args[0].equalsIgnoreCase("info") && Bukkit.getWorld("info") == null) {
                         p.sendMessage(prefix + Main.fontcolor + "/world [weltname|create|info] [weltname] [gamemode] [welttyp] [difficulty] [hardcore] [nether] [the_end] [damage] [saturation]");
+                    } else if (args[0].equalsIgnoreCase("return") && Bukkit.getWorld("return") == null) {
+                        if (p.isOp() || !playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName().equals(p.getWorld().getName().replace("_nether", "").replace("_the_end", ""))) {
+                            //p.teleport(worldPlayerDataManager.get(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld()).getRespawnLocation(p,false));
+                            p.teleport(playerCurrentWorld.get(p.getUniqueId().toString()));
+                            //p.teleport(worldPlayerDataManager.get(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld()).getStoredLocation(p)); //Nicht möglich, da in worldchange-Methode die store-Methode erst nach dem Teleport ausgeführt wird
+                        } else {
+                            p.sendMessage(prefix + ChatColor.RED + "Dieser Command ist nur nach externen Teleports verfügbar.");
+                        }
                     } else {
                         if (args[0].equals(Main.instance.getConfig().getString("world.testworld"))) {
                             if (configuration.getBoolean(args[0]+".enabled")) {
@@ -408,7 +418,8 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                                 p.sendMessage(prefix + ChatColor.RED+"Welt konnte nicht generiert werden");
                             }
                         }
-                    } else if (args[0].equalsIgnoreCase("disable")) {
+                    }
+                    else if (args[0].equalsIgnoreCase("disable")) {
                         if (Bukkit.getWorld(args[1]) != null) {
                             String worldname = Bukkit.getWorld(args[1]).getName().replace("_nether","").replace("_the_end","");
                             try {
@@ -442,56 +453,81 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 }
                 if (w != null) {
                     if (w.getEnvironment() != World.Environment.NETHER && w.getEnvironment() != World.Environment.THE_END) {
-                        for (Player a : Bukkit.getOnlinePlayers()) {
-                            if (a.getWorld().getName().equals(p.getWorld().getName()) || a.getWorld().getName().equals(p.getWorld().getName()+"_nether") || a.getWorld().getName().equals(p.getWorld().getName()+"_the_end")) {
-                                if (a != p) {
-                                    a.sendMessage(prefix + p.getDisplayName() + ChatColor.GRAY + " hat die Welt verlassen.");
+                        if (p.getWorld().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName())) {
+                            for (Player a : Bukkit.getOnlinePlayers()) {
+                                if (a.getWorld().getName().equals(p.getWorld().getName()) || a.getWorld().getName().equals(p.getWorld().getName() + "_nether") || a.getWorld().getName().equals(p.getWorld().getName() + "_the_end")) {
+                                    if (a != p) {
+                                        a.sendMessage(prefix + p.getDisplayName() + ChatColor.GRAY + " hat die Welt verlassen.");
+                                    }
                                 }
                             }
-                        }
 
-                        //Main.jumpAndRunManager.worldChange(p); // priority
-                        for (Map.Entry<World, PlayerDataManager> entry : worldPlayerDataManager.entrySet()) {
-                            if (p.getWorld() == entry.getKey() || p.getWorld().getName().equals(entry.getKey().getName() + "_nether") || p.getWorld().getName().equals(entry.getKey().getName() + "_the_end")) {
-                                entry.getValue().storePlayerData(p);
+                            //Main.jumpAndRunManager.worldChange(p); // priority
+                            for (Map.Entry<World, PlayerDataManager> entry : worldPlayerDataManager.entrySet()) {
+                                if (p.getWorld() == entry.getKey() || p.getWorld().getName().equals(entry.getKey().getName() + "_nether") || p.getWorld().getName().equals(entry.getKey().getName() + "_the_end")) {
+                                    entry.getValue().storePlayerData(p);
+                                }
                             }
-                        }
-                        if (worldPlayerDataManager.get(w).getStoredLocation(p) != null) {
-                            worldPlayerDataManager.get(w).switchPlayerData(p);
-                        } else {
-                            worldPlayerDataManager.get(w).storePlayerData(p);
-                            p.setGameMode(GameMode.SPECTATOR);
-                            p.setHealth(20);
-                            p.setFoodLevel(20);
-                            p.setLevel(0);
-                            p.setExp(0);
-                            for (PotionEffect potionEffect : p.getActivePotionEffects()) {
-                                p.removePotionEffect(potionEffect.getType());
-                            }
-                            p.getInventory().clear();
-                            p.teleport(w.getSpawnLocation().getBlock().getLocation());
-                            if (Bukkit.getWorlds().get(0) != w) {
-                                try {
-                                    p.setGameMode(GameMode.valueOf(configuration.getString(w.getName() + ".gamemode")));
-                                } catch (Exception ignored) { }
+                            proceedPlayer.add(p);
+                            if (worldPlayerDataManager.get(w).getStoredLocation(p) != null) {
+                                worldPlayerDataManager.get(w).switchPlayerData(p);
                             } else {
-                                p.setGameMode(Bukkit.getDefaultGameMode());
-                            }
-                        }
-
-                        if (w.getName().equals(Main.instance.getConfig().getString("world.lobby"))) {
-                            Main.lobbyInventory.setInv(p);
-                        }
-
-                        System.out.println(Main.consoleprefix + p.getName() + " joined " + w.getName());
-                        p.sendMessage(prefix + Main.themecolor + "Willkommen in der " + Main.themecolor + w.getName() + ".");
-
-                        for (Player a : Bukkit.getOnlinePlayers()) {
-                            if (a.getWorld().getName().equals(w.getName()) || a.getWorld().getName().equals(w.getName()+"_nether") || a.getWorld().getName().equals(w.getName()+"_the_end")) {
-                                if (a != p) {
-                                    a.sendMessage(prefix + p.getDisplayName() + ChatColor.GRAY + " hat die Welt betreten.");
+                                worldPlayerDataManager.get(w).storePlayerData(p);
+                                p.setGameMode(GameMode.SPECTATOR);
+                                p.setHealth(20);
+                                p.setFoodLevel(20);
+                                p.setLevel(0);
+                                p.setExp(0);
+                                for (PotionEffect potionEffect : p.getActivePotionEffects()) {
+                                    p.removePotionEffect(potionEffect.getType());
+                                }
+                                p.getInventory().clear();
+                                p.teleport(w.getSpawnLocation().getBlock().getLocation());
+                                worldPlayerDataManager.get(Bukkit.getWorld(p.getWorld().getName().replace("_nether","").replace("_the_end",""))).setStoredRespawnLocation(p,Bukkit.getWorld(p.getWorld().getName().replace("_nether","").replace("_the_end","")).getSpawnLocation(),0);
+                                if (Bukkit.getWorlds().get(0) != w) {
+                                    try {
+                                        p.setGameMode(GameMode.valueOf(configuration.getString(w.getName() + ".gamemode")));
+                                    } catch (Exception ignored) {
+                                    }
+                                } else {
+                                    p.setGameMode(Bukkit.getDefaultGameMode());
                                 }
                             }
+                            proceedPlayer.remove(p);
+                            playerCurrentWorld.put(p.getUniqueId().toString(), worldPlayerDataManager.get(w).getRespawnLocation(p,false));
+
+                            if (p.getGameMode() == GameMode.SPECTATOR || p.getGameMode() == GameMode.CREATIVE) {
+                                p.setAllowFlight(true);
+                                p.setFlying(true);
+                            } else {
+                                p.setAllowFlight(false);
+                            }
+
+                            if (w.getName().equals(Main.instance.getConfig().getString("world.lobby"))) {
+                                Main.lobbyInventory.setInv(p);
+                            }
+
+                            System.out.println(Main.consoleprefix + p.getName() + " joined " + w.getName());
+                            p.sendMessage(prefix + Main.themecolor + "Willkommen in der " + Main.themecolor + w.getName() + ".");
+
+                            for (Player a : Bukkit.getOnlinePlayers()) {
+                                if (a.getWorld().getName().equals(w.getName()) || a.getWorld().getName().equals(w.getName() + "_nether") || a.getWorld().getName().equals(w.getName() + "_the_end")) {
+                                    if (a != p) {
+                                        a.sendMessage(prefix + p.getDisplayName() + ChatColor.GRAY + " hat die Welt betreten.");
+                                    }
+                                }
+                            }
+                        } else {
+                            p.sendMessage(prefix + Main.fontcolor + "Du bist nicht in der aktuell für dich gespeicherten Welt.");
+                            p.sendMessage(prefix + Main.fontcolor + "Durch den Teleport würden deine Daten beschädigt werden.");
+                            TextComponent msg0 = new TextComponent(prefix + Main.fontcolor + "Bitte begebe dich in die ");
+                            TextComponent msg1 = new TextComponent(Main.themecolor + playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName());
+                            msg1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/world return"));
+                            msg1.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,TextComponent.fromLegacyText("/world return")));
+                            TextComponent msg2 = new TextComponent(Main.fontcolor + " und versuche es erneut.");
+                            msg0.addExtra(msg1);
+                            msg0.addExtra(msg2);
+                            p.spigot().sendMessage(msg0);
                         }
                     } else {
                         p.sendMessage(prefix + ChatColor.RED + "Du kannst dich nicht in diese Welt teleportieren.");
@@ -548,6 +584,23 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
         return list;
     }
 
+    // SECONDARY
+    public void onJoin(Player p) {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(Main.instance, new TimerTask() {
+            @Override
+            public void run() {
+                if (!playerCurrentWorld.containsKey(p.getUniqueId().toString())) {
+                    if (worldPlayerDataManager.get(p.getWorld().getName().replace("_nether", "").replace("_the_end", "")) != null) {
+                        playerCurrentWorld.put(p.getUniqueId().toString(), worldPlayerDataManager.get(p.getWorld().getName().replace("_nether", "").replace("_the_end", "")).getRespawnLocation(p, false));
+                    } else {
+                        playerCurrentWorld.put(p.getUniqueId().toString(), Bukkit.getWorld(p.getWorld().getName().replace("_nether", "").replace("_the_end", "")).getSpawnLocation());
+                    }
+                }
+            }
+        }, 25);
+    }
+
+    // PRIMARY
     public void onFirstJoin(Player p) {
         p.setGameMode(GameMode.SPECTATOR);
         Bukkit.getScheduler().scheduleSyncDelayedTask(Main.instance, new TimerTask() {
@@ -563,8 +616,6 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
         }, 20);
     }
 
-
-
     public void onDisable() {
         for (Player a : Bukkit.getOnlinePlayers()) {
             if (a.isDead()) {
@@ -578,7 +629,41 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                     && a.getWorld() != world
                     && a.getWorld() != world_nether
                     && a.getWorld() != world_the_end) {
+                if (!a.getWorld().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(a.getUniqueId().toString()).getWorld().getName())) {
+                    Bukkit.dispatchCommand(a, "world return");
+                }
                 Bukkit.dispatchCommand(a,"lobby");
+            }
+        }
+        saveCurrentWorlds();
+    }
+
+    @EventHandler
+    public void onWorldChange(PlayerChangedWorldEvent event) {
+        Player p = event.getPlayer();
+        if (playerCurrentWorld.containsKey(p.getUniqueId().toString())) {
+            if (!p.getWorld().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName()) && !proceedPlayer.contains(p)) {
+                worldPlayerDataManager.get(event.getFrom()).storePlayerData(p);
+                //playerCurrentWorld.put(p.getUniqueId().toString(), new Location(event.getFrom(),0,0,0));
+                p.getInventory().clear();
+                System.out.println(Main.consoleprefix + p.getName() + " betritt " + p.getWorld().getName() + " durch externen Teleport.");
+                Bukkit.getScheduler().scheduleSyncDelayedTask(Main.instance, new TimerTask() {
+                    @Override
+                    public void run() {
+                        p.updateInventory();
+                    }
+                }, 5);
+            } else if (p.getWorld().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName())
+                    && event.getFrom().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName())) {
+                p.setGameMode(worldPlayerDataManager.get(p.getWorld()).getStoredGamemode(p));
+                p.getInventory().setContents(worldPlayerDataManager.get(p.getWorld()).getStoredInventory(p));
+                p.setHealth(worldPlayerDataManager.get(p.getWorld()).getStoredHealth(p));
+                p.setFoodLevel(worldPlayerDataManager.get(p.getWorld()).getStoredHunger(p));
+                p.setLevel(worldPlayerDataManager.get(p.getWorld()).getStoredLevel(p));
+                p.setExp(worldPlayerDataManager.get(p.getWorld()).getStoredExp(p));
+                p.addPotionEffects(Arrays.asList(worldPlayerDataManager.get(p.getWorld()).getStoredPotionEffects(p)));
+                //p.setGameMode(GameMode.valueOf(configuration.getString(p.getWorld().getName()+".gamemode")));
+                System.out.println(Main.consoleprefix + p.getName() + " wird in gespeicherte Welt zurückteleportiert.");
             }
         }
     }
@@ -588,26 +673,30 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
         Player p = event.getPlayer();
         World world = Bukkit.getWorld(event.getPlayer().getWorld().getName().replace("_nether","").replace("_the_end",""));
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            Block b = event.getClickedBlock();
-            if (b.getType().toString().contains("BED") && b.getType() != Material.BEDROCK) {
-                if (p.getWorld().getEnvironment() != World.Environment.NETHER && p.getWorld().getEnvironment() != World.Environment.THE_END) {
-                    if (worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockX() != b.getLocation().getBlockX()
-                        || worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockY() != b.getLocation().getBlockY()+1
-                        || worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockZ() != b.getLocation().getBlockZ()) {
-                        p.sendMessage(Main.ingameprefix + Main.fontcolor + "Respawnpunkt wurde gesetzt.");
-                    }
-                    worldPlayerDataManager.get(world).setStoredRespawnLocation(p, event.getClickedBlock().getLocation(),1);
-                }
-            } else if (b.getBlockData() instanceof RespawnAnchor) {
-                if (p.getWorld().getEnvironment() == World.Environment.NETHER) {
-                    RespawnAnchor respawnAnchor = (RespawnAnchor) b.getBlockData();
-                    if (0 < respawnAnchor.getCharges() && p.getItemInHand().getType() == Material.AIR){
-                        if (worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockX() != event.getClickedBlock().getLocation().getBlockX()
-                                || worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockY() != event.getClickedBlock().getLocation().getBlockY()+1
-                                || worldPlayerDataManager.get(world).getRespawnLocation(p,false).getBlockZ() != event.getClickedBlock().getLocation().getBlockZ()) {
+            if (playerCurrentWorld.get(p.getUniqueId().toString()).getWorld() == world) {
+                Block b = event.getClickedBlock();
+                if (b.getType().toString().contains("BED") && b.getType() != Material.BEDROCK) {
+                    if (p.getWorld().getEnvironment() != World.Environment.NETHER && p.getWorld().getEnvironment() != World.Environment.THE_END) {
+                        if (worldPlayerDataManager.get(world).getRespawnLocation(p, false).getBlockX() != b.getLocation().getBlockX()
+                                || worldPlayerDataManager.get(world).getRespawnLocation(p, false).getBlockY() != b.getLocation().getBlockY() + 1
+                                || worldPlayerDataManager.get(world).getRespawnLocation(p, false).getBlockZ() != b.getLocation().getBlockZ()) {
                             p.sendMessage(Main.ingameprefix + Main.fontcolor + "Respawnpunkt wurde gesetzt.");
                         }
-                        worldPlayerDataManager.get(world).setStoredRespawnLocation(p, event.getClickedBlock().getLocation(),2);
+                        worldPlayerDataManager.get(world).setStoredRespawnLocation(p, event.getClickedBlock().getLocation(), 1);
+                        playerCurrentWorld.put(p.getUniqueId().toString(),event.getClickedBlock().getLocation());
+                    }
+                } else if (b.getBlockData() instanceof RespawnAnchor) {
+                    if (p.getWorld().getEnvironment() == World.Environment.NETHER) {
+                        RespawnAnchor respawnAnchor = (RespawnAnchor) b.getBlockData();
+                        if (0 < respawnAnchor.getCharges() && p.getItemInHand().getType() == Material.AIR) {
+                            if (worldPlayerDataManager.get(world).getRespawnLocation(p, false).getBlockX() != event.getClickedBlock().getLocation().getBlockX()
+                                    || worldPlayerDataManager.get(world).getRespawnLocation(p, false).getBlockY() != event.getClickedBlock().getLocation().getBlockY() + 1
+                                    || worldPlayerDataManager.get(world).getRespawnLocation(p, false).getBlockZ() != event.getClickedBlock().getLocation().getBlockZ()) {
+                                p.sendMessage(Main.ingameprefix + Main.fontcolor + "Respawnpunkt wurde gesetzt.");
+                            }
+                            worldPlayerDataManager.get(world).setStoredRespawnLocation(p, event.getClickedBlock().getLocation(), 2);
+                            playerCurrentWorld.put(p.getUniqueId().toString(),event.getClickedBlock().getLocation());
+                        }
                     }
                 }
             }
@@ -616,23 +705,25 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
 
     @EventHandler
     public void onRespawnCommand(PlayerCommandPreprocessEvent event) {
-        if (event.getMessage().contains("/spawnpoint")) {
-            Player p = event.getPlayer();
-            World world = Bukkit.getWorld(event.getPlayer().getWorld().getName().replace("_nether","").replace("_the_end",""));
-            event.setCancelled(true);
-            if (event.getMessage().equals("/spawnpoint")) {
-                worldPlayerDataManager.get(world).setStoredRespawnLocation(p, p.getLocation(),0);
-                p.sendMessage(Main.ingameprefix + Main.fontcolor + "Respawnpunkt wurde gesetzt.");
-            } else {
-                p.sendMessage(Main.ingameprefix + Main.fontcolor + "Dieser Command ist deaktiviert.");
+        if (playerCurrentWorld.get(event.getPlayer().getUniqueId().toString()).getWorld() == event.getPlayer().getWorld()) {
+            if (event.getMessage().contains("/spawnpoint")) {
+                Player p = event.getPlayer();
+                World world = Bukkit.getWorld(event.getPlayer().getWorld().getName().replace("_nether", "").replace("_the_end", ""));
+                event.setCancelled(true);
+                if (event.getMessage().equals("/spawnpoint")) {
+                    worldPlayerDataManager.get(world).setStoredRespawnLocation(p, p.getLocation(), 0);
+                    playerCurrentWorld.put(p.getUniqueId().toString(),p.getLocation());
+                    p.sendMessage(Main.ingameprefix + Main.fontcolor + "Respawnpunkt wurde gesetzt.");
+                } else {
+                    p.sendMessage(Main.ingameprefix + Main.fontcolor + "Dieser Command ist deaktiviert.");
+                }
             }
         }
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
-        if (!event.getPlayer().getWorld().getName().equals(Main.instance.getConfig().getString("world.lobby"))
-                && configuration.getBoolean(event.getPlayer().getWorld().getName() + ".hardcore")) {
+        if (configuration.getBoolean(event.getPlayer().getWorld().getName() + ".hardcore")) {
             Bukkit.getScheduler().scheduleSyncDelayedTask(Main.instance, new TimerTask() {
                 @Override
                 public void run() {
@@ -642,19 +733,21 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
             },5);
         } else {
             Player p = event.getPlayer();
-            event.isAnchorSpawn();
-            World world = Bukkit.getWorld(event.getPlayer().getWorld().getName().replace("_nether","").replace("_the_end",""));
-            Location respawnlocation = worldPlayerDataManager.get(world).getRespawnLocation(p,false);
-            respawnlocation.setY(respawnlocation.getY() - 1);
-            if (respawnlocation.getBlock().getBlockData() instanceof RespawnAnchor) {
-                if (event.isAnchorSpawn()) {
-                    event.setRespawnLocation(worldPlayerDataManager.get(world).getRespawnLocation(p,true));
+            if (playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName().equals(p.getWorld().getName().replace("_nether", "").replace("_the_end", ""))) {
+                event.isAnchorSpawn();
+                World world = Bukkit.getWorld(event.getPlayer().getWorld().getName().replace("_nether","").replace("_the_end",""));
+                Location respawnlocation = worldPlayerDataManager.get(world).getRespawnLocation(p,false);
+                respawnlocation.setY(respawnlocation.getY() - 1);
+                if (respawnlocation.getBlock().getBlockData() instanceof RespawnAnchor) {
+                    if (event.isAnchorSpawn()) {
+                        event.setRespawnLocation(worldPlayerDataManager.get(world).getRespawnLocation(p,true));
+                    } else {
+                        event.setRespawnLocation(Bukkit.getWorld(p.getWorld().getName().replace("_nether","").replace("_the_end","")).getSpawnLocation());
+                        p.sendMessage(Main.ingameprefix + Main.fontcolor + "Der Seelenanker ist nicht mehr geladen.");
+                    }
                 } else {
-                    event.setRespawnLocation(Bukkit.getWorld(p.getWorld().getName().replace("_nether","").replace("_the_end","")).getSpawnLocation());
-                    p.sendMessage(Main.ingameprefix + Main.fontcolor + "Der Seelenanker ist nicht mehr geladen.");
+                    event.setRespawnLocation(worldPlayerDataManager.get(world).getRespawnLocation(p,true));
                 }
-            } else {
-                event.setRespawnLocation(worldPlayerDataManager.get(world).getRespawnLocation(p,true));
             }
         }
     }
@@ -779,6 +872,34 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
             } else {
                 event.setCancelled(true);
             }
+        }
+    }
+
+    public void loadCurrentWorlds() {
+        try {
+            File file = new File("plugins//CoderrCore//data//player.yml");
+            if (file.exists()) {
+                YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+                for (String uuid : configuration.getKeys(false)) {
+                    String[] loc = configuration.getString(uuid + ".location").split(",");
+                    playerCurrentWorld.put(uuid, new Location(Bukkit.getWorld(loc[0]),Double.parseDouble(loc[1]),Double.parseDouble(loc[2]),Double.parseDouble(loc[3])));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(Main.consoleprefix + "Aktuelle Welten der Spieler konnten nicht geladen werden.");
+        }
+    }
+
+    public void saveCurrentWorlds() {
+        try {
+            File file = new File("plugins//CoderrCore//data//player.yml");
+            YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+            for (Map.Entry<String,Location> uuid : playerCurrentWorld.entrySet()) {
+                    configuration.set(uuid.getKey() + ".location", uuid.getValue().getWorld().getName()+","+uuid.getValue().getBlockX()+","+uuid.getValue().getBlockY()+","+uuid.getValue().getBlockZ());
+            }
+            configuration.save(file);
+        } catch (Exception e) {
+            System.out.println(Main.consoleprefix + "Aktuelle Welten der Spieler konnten nicht gespeichert werden.");
         }
     }
 }

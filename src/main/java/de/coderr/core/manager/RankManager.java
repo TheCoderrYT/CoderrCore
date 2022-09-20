@@ -17,6 +17,10 @@ public class RankManager implements CommandExecutor, TabCompleter
 {
     public RankManager()
     {
+        File file = new File("plugins//CoderrCore//data//ranks.yml");
+        if (file.exists()) {
+            file.renameTo(new File("plugins//CoderrCore//data//player.yml"));
+        }
         updateRanks();
     }
 
@@ -105,7 +109,7 @@ public class RankManager implements CommandExecutor, TabCompleter
     public void setRank(Player p, int permissionlevel)
     {
         try {
-            File permissions = new File("plugins//CoderrCore//data//ranks.yml");
+            File permissions = new File("plugins//CoderrCore//data//player.yml");
             YamlConfiguration permissionsConfig = YamlConfiguration.loadConfiguration(permissions);
             permissionsConfig.set(p.getUniqueId() + ".name",p.getName());
             permissionsConfig.set(p.getUniqueId() + ".rank",permissionlevel);
@@ -118,7 +122,7 @@ public class RankManager implements CommandExecutor, TabCompleter
 
     public int getRank(UUID uuid) {
         try {
-            File permissions = new File("plugins//CoderrCore//data//ranks.yml");
+            File permissions = new File("plugins//CoderrCore//data//player.yml");
             YamlConfiguration permissionsConfig = YamlConfiguration.loadConfiguration(permissions);
             return permissionsConfig.getInt(uuid.toString() + ".rank");
         }
@@ -127,7 +131,7 @@ public class RankManager implements CommandExecutor, TabCompleter
     }
 
     public boolean containsRank(UUID uuid) {
-        File permissions = new File("plugins//CoderrCore//data//ranks.yml");
+        File permissions = new File("plugins//CoderrCore//data//player.yml");
         YamlConfiguration permissionsConfig = YamlConfiguration.loadConfiguration(permissions);
         return permissionsConfig.contains(uuid.toString() + ".rank");
     }
@@ -135,7 +139,7 @@ public class RankManager implements CommandExecutor, TabCompleter
 
     public void updateRanks()
     {
-        File permissions = new File("plugins//CoderrCore//data//ranks.yml");
+        File permissions = new File("plugins//CoderrCore//data//player.yml");
         YamlConfiguration permissionsConfig = YamlConfiguration.loadConfiguration(permissions);
         if (!permissions.exists())
         {

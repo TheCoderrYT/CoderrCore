@@ -91,6 +91,7 @@ public class JoinListener implements Listener
             Main.rankManager.setRank(p,0);
             Main.worldManager.onFirstJoin(p);
         }
+        Main.worldManager.onJoin(p);
 
         Main.tablistManager.permissions.put(String.valueOf(p.getUniqueId()),p.addAttachment(Main.instance));
 
