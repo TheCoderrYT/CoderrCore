@@ -274,7 +274,6 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                                     }
                                 }
                                 // TODO: Maybe Schwierigkeiten wenn Spieler joint
-                                // TODO: Welt die man verlässt speichert falsch
                                 if (!equals) {
                                     proceedPlayer.add(p);
                                     //worldPlayerDataManager.get(p.getWorld()).storePlayerData(p);
