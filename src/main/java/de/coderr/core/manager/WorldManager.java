@@ -34,11 +34,13 @@ import java.util.*;
 
 public class WorldManager implements CommandExecutor, Listener, TabCompleter
 {
-    private final String prefix = ChatColor.DARK_GRAY + "[" + Main.themecolor + "World" + ChatColor.DARK_GRAY + "] " + ChatColor.RESET;
+    private final String prefix = ChatColor.DARK_GRAY + "[" + Main.themecolor + "World" + ChatColor.DARK_GRAY + "] " + ChatColor.GRAY;
     File file;
     YamlConfiguration configuration;
 
     Map<World, PlayerDataManager> worldPlayerDataManager = new HashMap<>();
+    List<Map<World, PlayerDataManager>> playerDataManagerHistory = new ArrayList<>();
+    List<Map<Player, World>> playerWorldHistory = new ArrayList<>();
     Map<String, Location> playerCurrentWorld = new HashMap<>();
     List<Player> proceedPlayer = new ArrayList<>();
 
@@ -256,6 +258,43 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                         } else {
                             p.sendMessage(prefix + ChatColor.RED + "Dieser Command ist nur nach externen Teleports verfügbar.");
                         }
+                    }
+                    else if (args[0].equalsIgnoreCase("undo")) {
+                        if (p.isOp()) {
+                            if (playerWorldHistory.size() > 0) {
+                                Map<Player, World> playerHistory = new HashMap<>();
+                                for (Player a : Bukkit.getOnlinePlayers()) {
+                                    playerHistory.put(a, Bukkit.getWorld(a.getWorld().getName().replace("_nether", "").replace("_the_end", "")));
+                                }
+                                boolean equals = true;
+                                for (Player tempPlayer : playerHistory.keySet()) {
+                                    if (!playerWorldHistory.get(playerWorldHistory.size() - 1).containsKey(tempPlayer)
+                                            || !playerWorldHistory.get(playerWorldHistory.size() - 1).containsValue(playerHistory.get(tempPlayer))) {
+                                        equals = false;
+                                    }
+                                }
+                                // TODO: Maybe Schwierigkeiten wenn Spieler joint
+                                // TODO: Welt die man verlässt speichert falsch
+                                if (!equals) {
+                                    proceedPlayer.add(p);
+                                    //worldPlayerDataManager.get(p.getWorld()).storePlayerData(p);
+                                    System.out.println(playerWorldHistory.get(playerWorldHistory.size() - 1).get(p).getName());
+                                    playerDataManagerHistory.get(playerDataManagerHistory.size() - 1).get(playerWorldHistory.get(playerWorldHistory.size() - 1).get(p)).setStoredPlayerData(p);
+                                    playerWorldHistory.remove(playerWorldHistory.size() - 1);
+                                    worldPlayerDataManager = playerDataManagerHistory.get(playerDataManagerHistory.size() - 1);
+                                    playerDataManagerHistory.remove(playerDataManagerHistory.size() - 1);
+                                    playerCurrentWorld.put(p.getUniqueId().toString(), worldPlayerDataManager.get(p.getWorld()).getRespawnLocation(p,false));
+                                    proceedPlayer.remove(p);
+                                    p.sendMessage(prefix + "Dein letzter Teleport wurde rückgängig gemacht.");
+                                } else {
+                                    p.sendMessage(prefix + ChatColor.RED + "Für dich ist kein Verlauf gespeichert.");
+                                }
+                            } else {
+                                p.sendMessage(prefix + ChatColor.RED + "Es sind keine Verläufe gespeichert.");
+                            }
+                        } else {
+                            p.sendMessage(prefix + ChatColor.RED + "Du hast nicht die passenden Rechte.");
+                        }
                     } else {
                         if (args[0].equals(Main.instance.getConfig().getString("world.testworld"))) {
                             if (configuration.getBoolean(args[0]+".enabled")) {
@@ -462,6 +501,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                                 }
                             }
 
+                            saveInHistory();
                             //Main.jumpAndRunManager.worldChange(p); // priority
                             for (Map.Entry<World, PlayerDataManager> entry : worldPlayerDataManager.entrySet()) {
                                 if (p.getWorld() == entry.getKey() || p.getWorld().getName().equals(entry.getKey().getName() + "_nether") || p.getWorld().getName().equals(entry.getKey().getName() + "_the_end")) {
@@ -470,9 +510,9 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                             }
                             proceedPlayer.add(p);
                             if (worldPlayerDataManager.get(w).getStoredLocation(p) != null) {
-                                worldPlayerDataManager.get(w).switchPlayerData(p);
+                                worldPlayerDataManager.get(w).setStoredPlayerData(p);
                             } else {
-                                worldPlayerDataManager.get(w).storePlayerData(p);
+                                //worldPlayerDataManager.get(w).storePlayerData(p);
                                 p.setGameMode(GameMode.SPECTATOR);
                                 p.setHealth(20);
                                 p.setFoodLevel(20);
@@ -590,6 +630,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
             @Override
             public void run() {
                 if (!playerCurrentWorld.containsKey(p.getUniqueId().toString())) {
+                    saveInHistory();
                     if (worldPlayerDataManager.get(p.getWorld().getName().replace("_nether", "").replace("_the_end", "")) != null) {
                         playerCurrentWorld.put(p.getUniqueId().toString(), worldPlayerDataManager.get(p.getWorld().getName().replace("_nether", "").replace("_the_end", "")).getRespawnLocation(p, false));
                     } else {
@@ -654,7 +695,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                     }
                 }, 5);
             } else if (p.getWorld().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName())
-                    && event.getFrom().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName())) {
+                    && !event.getFrom().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName())) {
                 p.setGameMode(worldPlayerDataManager.get(p.getWorld()).getStoredGamemode(p));
                 p.getInventory().setContents(worldPlayerDataManager.get(p.getWorld()).getStoredInventory(p));
                 p.setHealth(worldPlayerDataManager.get(p.getWorld()).getStoredHealth(p));
@@ -683,6 +724,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                             p.sendMessage(Main.ingameprefix + Main.fontcolor + "Respawnpunkt wurde gesetzt.");
                         }
                         worldPlayerDataManager.get(world).setStoredRespawnLocation(p, event.getClickedBlock().getLocation(), 1);
+                        saveInHistory();
                         playerCurrentWorld.put(p.getUniqueId().toString(),event.getClickedBlock().getLocation());
                     }
                 } else if (b.getBlockData() instanceof RespawnAnchor) {
@@ -695,6 +737,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                                 p.sendMessage(Main.ingameprefix + Main.fontcolor + "Respawnpunkt wurde gesetzt.");
                             }
                             worldPlayerDataManager.get(world).setStoredRespawnLocation(p, event.getClickedBlock().getLocation(), 2);
+                            saveInHistory();
                             playerCurrentWorld.put(p.getUniqueId().toString(),event.getClickedBlock().getLocation());
                         }
                     }
@@ -712,6 +755,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 event.setCancelled(true);
                 if (event.getMessage().equals("/spawnpoint")) {
                     worldPlayerDataManager.get(world).setStoredRespawnLocation(p, p.getLocation(), 0);
+                    saveInHistory();
                     playerCurrentWorld.put(p.getUniqueId().toString(),p.getLocation());
                     p.sendMessage(Main.ingameprefix + Main.fontcolor + "Respawnpunkt wurde gesetzt.");
                 } else {
@@ -765,6 +809,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 && p.getWorld() != world_the_end) {
             Bukkit.dispatchCommand(p,"lobby");
         }
+        worldPlayerDataManager.get(p.getWorld()).storePlayerData(p);
     }
 
     @EventHandler
@@ -873,6 +918,24 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 event.setCancelled(true);
             }
         }
+    }
+
+    public void saveInHistory() {
+        for (Player a : Bukkit.getOnlinePlayers()) {
+            worldPlayerDataManager.get(a.getWorld()).storePlayerData(a);
+        }
+        if (playerDataManagerHistory.size() == 3) {
+            playerDataManagerHistory.remove(2);
+        }
+        if (playerWorldHistory.size() == 3) {
+            playerWorldHistory.remove(2);
+        }
+        playerDataManagerHistory.add(worldPlayerDataManager);
+        Map<Player, World> playerHistory = new HashMap<>();
+        for (Player a : Bukkit.getOnlinePlayers()) {
+            playerHistory.put(a,Bukkit.getWorld(a.getWorld().getName().replace("_nether","").replace("_the_end","")));
+        }
+        playerWorldHistory.add(playerHistory);
     }
 
     public void loadCurrentWorlds() {

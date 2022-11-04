@@ -39,9 +39,10 @@ public class PlayerDataManager
             playerRespawnLocations.put(p.getUniqueId().toString(),  respawn.getWorld().getName() + "," + respawn.getX() + "," + respawn.getY() + "," + respawn.getZ()+",3");
         }
         playerPotionEffects.put(p.getUniqueId().toString(),p.getActivePotionEffects().toArray(new PotionEffect[0]));
+        save();
     }
 
-    public void switchPlayerData(Player p) {
+    public void setStoredPlayerData(Player p) {
         Location location = getStoredLocation(p);
         double health = getStoredHealth(p);
         int foodlevel = getStoredHunger(p);
@@ -51,7 +52,7 @@ public class PlayerDataManager
         float exp = getStoredExp(p);
         PotionEffect[] potionEffects = getStoredPotionEffects(p);
 
-        storePlayerData(p);
+        //storePlayerData(p);
 
         p.setGameMode(GameMode.SPECTATOR);
         p.setHealth(health);
