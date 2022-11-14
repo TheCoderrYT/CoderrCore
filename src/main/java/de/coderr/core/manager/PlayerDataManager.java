@@ -39,7 +39,6 @@ public class PlayerDataManager
             playerRespawnLocations.put(p.getUniqueId().toString(),  respawn.getWorld().getName() + "," + respawn.getX() + "," + respawn.getY() + "," + respawn.getZ()+",3");
         }
         playerPotionEffects.put(p.getUniqueId().toString(),p.getActivePotionEffects().toArray(new PotionEffect[0]));
-        save();
     }
 
     public void setStoredPlayerData(Player p) {

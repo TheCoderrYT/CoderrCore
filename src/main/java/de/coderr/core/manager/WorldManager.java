@@ -100,6 +100,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                         configuration.set(worldName+".difficulty","PEACEFUL");
                     } else {
                         if (!configuration.contains(worldName+".generator")) { configuration.set(worldName + ".generator", "DEFAULT"); }
+                        if (!configuration.contains(worldName+".teleport")) { configuration.set(worldName + ".teleport", true); }
                     }
                 }
                 configuration.save(file);
@@ -277,12 +278,11 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                                 if (!equals) {
                                     proceedPlayer.add(p);
                                     //worldPlayerDataManager.get(p.getWorld()).storePlayerData(p);
-                                    System.out.println(playerWorldHistory.get(playerWorldHistory.size() - 1).get(p).getName());
                                     playerDataManagerHistory.get(playerDataManagerHistory.size() - 1).get(playerWorldHistory.get(playerWorldHistory.size() - 1).get(p)).setStoredPlayerData(p);
                                     playerWorldHistory.remove(playerWorldHistory.size() - 1);
                                     worldPlayerDataManager = playerDataManagerHistory.get(playerDataManagerHistory.size() - 1);
                                     playerDataManagerHistory.remove(playerDataManagerHistory.size() - 1);
-                                    playerCurrentWorld.put(p.getUniqueId().toString(), worldPlayerDataManager.get(p.getWorld()).getRespawnLocation(p,false));
+                                    playerCurrentWorld.put(p.getUniqueId().toString(), worldPlayerDataManager.get(Bukkit.getWorld(p.getWorld().getName().replace("_nether","").replace("_the_end",""))).getRespawnLocation(p,false));
                                     proceedPlayer.remove(p);
                                     p.sendMessage(prefix + "Dein letzter Teleport wurde rückgängig gemacht.");
                                 } else {
@@ -491,82 +491,86 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 }
                 if (w != null) {
                     if (w.getEnvironment() != World.Environment.NETHER && w.getEnvironment() != World.Environment.THE_END) {
-                        if (p.getWorld().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName())) {
-                            for (Player a : Bukkit.getOnlinePlayers()) {
-                                if (a.getWorld().getName().equals(p.getWorld().getName()) || a.getWorld().getName().equals(p.getWorld().getName() + "_nether") || a.getWorld().getName().equals(p.getWorld().getName() + "_the_end")) {
-                                    if (a != p) {
-                                        a.sendMessage(prefix + p.getDisplayName() + ChatColor.GRAY + " hat die Welt verlassen.");
+                        if (configuration.getBoolean(w.getName()+".teleport") || p.isOp()) {
+                            if (p.getWorld().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName())) {
+                                for (Player a : Bukkit.getOnlinePlayers()) {
+                                    if (a.getWorld().getName().equals(p.getWorld().getName()) || a.getWorld().getName().equals(p.getWorld().getName() + "_nether") || a.getWorld().getName().equals(p.getWorld().getName() + "_the_end")) {
+                                        if (a != p) {
+                                            a.sendMessage(prefix + p.getDisplayName() + ChatColor.GRAY + " hat die Welt verlassen.");
+                                        }
                                     }
                                 }
-                            }
 
-                            saveInHistory();
-                            //Main.jumpAndRunManager.worldChange(p); // priority
-                            for (Map.Entry<World, PlayerDataManager> entry : worldPlayerDataManager.entrySet()) {
-                                if (p.getWorld() == entry.getKey() || p.getWorld().getName().equals(entry.getKey().getName() + "_nether") || p.getWorld().getName().equals(entry.getKey().getName() + "_the_end")) {
-                                    entry.getValue().storePlayerData(p);
-                                }
-                            }
-                            proceedPlayer.add(p);
-                            if (worldPlayerDataManager.get(w).getStoredLocation(p) != null) {
-                                worldPlayerDataManager.get(w).setStoredPlayerData(p);
-                            } else {
-                                //worldPlayerDataManager.get(w).storePlayerData(p);
-                                p.setGameMode(GameMode.SPECTATOR);
-                                p.setHealth(20);
-                                p.setFoodLevel(20);
-                                p.setLevel(0);
-                                p.setExp(0);
-                                for (PotionEffect potionEffect : p.getActivePotionEffects()) {
-                                    p.removePotionEffect(potionEffect.getType());
-                                }
-                                p.getInventory().clear();
-                                p.teleport(w.getSpawnLocation().getBlock().getLocation());
-                                worldPlayerDataManager.get(Bukkit.getWorld(p.getWorld().getName().replace("_nether","").replace("_the_end",""))).setStoredRespawnLocation(p,Bukkit.getWorld(p.getWorld().getName().replace("_nether","").replace("_the_end","")).getSpawnLocation(),0);
-                                if (Bukkit.getWorlds().get(0) != w) {
-                                    try {
-                                        p.setGameMode(GameMode.valueOf(configuration.getString(w.getName() + ".gamemode")));
-                                    } catch (Exception ignored) {
+                                saveInHistory();
+                                //Main.jumpAndRunManager.worldChange(p); // priority
+                                for (Map.Entry<World, PlayerDataManager> entry : worldPlayerDataManager.entrySet()) {
+                                    if (p.getWorld() == entry.getKey() || p.getWorld().getName().equals(entry.getKey().getName() + "_nether") || p.getWorld().getName().equals(entry.getKey().getName() + "_the_end")) {
+                                        entry.getValue().storePlayerData(p);
                                     }
+                                }
+                                proceedPlayer.add(p);
+                                if (worldPlayerDataManager.get(w).getStoredLocation(p) != null) {
+                                    worldPlayerDataManager.get(w).setStoredPlayerData(p);
                                 } else {
-                                    p.setGameMode(Bukkit.getDefaultGameMode());
-                                }
-                            }
-                            proceedPlayer.remove(p);
-                            playerCurrentWorld.put(p.getUniqueId().toString(), worldPlayerDataManager.get(w).getRespawnLocation(p,false));
-
-                            if (p.getGameMode() == GameMode.SPECTATOR || p.getGameMode() == GameMode.CREATIVE) {
-                                p.setAllowFlight(true);
-                                p.setFlying(true);
-                            } else {
-                                p.setAllowFlight(false);
-                            }
-
-                            if (w.getName().equals(Main.instance.getConfig().getString("world.lobby"))) {
-                                Main.lobbyInventory.setInv(p);
-                            }
-
-                            System.out.println(Main.consoleprefix + p.getName() + " joined " + w.getName());
-                            p.sendMessage(prefix + Main.themecolor + "Willkommen in der " + Main.themecolor + w.getName() + ".");
-
-                            for (Player a : Bukkit.getOnlinePlayers()) {
-                                if (a.getWorld().getName().equals(w.getName()) || a.getWorld().getName().equals(w.getName() + "_nether") || a.getWorld().getName().equals(w.getName() + "_the_end")) {
-                                    if (a != p) {
-                                        a.sendMessage(prefix + p.getDisplayName() + ChatColor.GRAY + " hat die Welt betreten.");
+                                    //worldPlayerDataManager.get(w).storePlayerData(p);
+                                    p.setGameMode(GameMode.SPECTATOR);
+                                    p.setHealth(20);
+                                    p.setFoodLevel(20);
+                                    p.setLevel(0);
+                                    p.setExp(0);
+                                    for (PotionEffect potionEffect : p.getActivePotionEffects()) {
+                                        p.removePotionEffect(potionEffect.getType());
+                                    }
+                                    p.getInventory().clear();
+                                    p.teleport(w.getSpawnLocation().getBlock().getLocation());
+                                    worldPlayerDataManager.get(Bukkit.getWorld(p.getWorld().getName().replace("_nether", "").replace("_the_end", ""))).setStoredRespawnLocation(p, Bukkit.getWorld(p.getWorld().getName().replace("_nether", "").replace("_the_end", "")).getSpawnLocation(), 0);
+                                    if (Bukkit.getWorlds().get(0) != w) {
+                                        try {
+                                            p.setGameMode(GameMode.valueOf(configuration.getString(w.getName() + ".gamemode")));
+                                        } catch (Exception ignored) {
+                                        }
+                                    } else {
+                                        p.setGameMode(Bukkit.getDefaultGameMode());
                                     }
                                 }
+                                proceedPlayer.remove(p);
+                                playerCurrentWorld.put(p.getUniqueId().toString(), worldPlayerDataManager.get(w).getRespawnLocation(p, false));
+
+                                if (p.getGameMode() == GameMode.SPECTATOR || p.getGameMode() == GameMode.CREATIVE) {
+                                    p.setAllowFlight(true);
+                                    p.setFlying(true);
+                                } else {
+                                    p.setAllowFlight(false);
+                                }
+
+                                if (w.getName().equals(Main.instance.getConfig().getString("world.lobby"))) {
+                                    Main.lobbyInventory.setInv(p);
+                                }
+
+                                System.out.println(Main.consoleprefix + p.getName() + " joined " + w.getName());
+                                p.sendMessage(prefix + Main.themecolor + "Willkommen in der " + Main.themecolor + w.getName() + ".");
+
+                                for (Player a : Bukkit.getOnlinePlayers()) {
+                                    if (a.getWorld().getName().equals(w.getName()) || a.getWorld().getName().equals(w.getName() + "_nether") || a.getWorld().getName().equals(w.getName() + "_the_end")) {
+                                        if (a != p) {
+                                            a.sendMessage(prefix + p.getDisplayName() + ChatColor.GRAY + " hat die Welt betreten.");
+                                        }
+                                    }
+                                }
+                            } else {
+                                p.sendMessage(prefix + Main.fontcolor + "Du bist nicht in der aktuell für dich gespeicherten Welt.");
+                                p.sendMessage(prefix + Main.fontcolor + "Durch den Teleport würden deine Daten beschädigt werden.");
+                                TextComponent msg0 = new TextComponent(prefix + Main.fontcolor + "Bitte begebe dich in die ");
+                                TextComponent msg1 = new TextComponent(Main.themecolor + playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName());
+                                msg1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/world return"));
+                                msg1.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText("/world return")));
+                                TextComponent msg2 = new TextComponent(Main.fontcolor + " und versuche es erneut.");
+                                msg0.addExtra(msg1);
+                                msg0.addExtra(msg2);
+                                p.spigot().sendMessage(msg0);
                             }
                         } else {
-                            p.sendMessage(prefix + Main.fontcolor + "Du bist nicht in der aktuell für dich gespeicherten Welt.");
-                            p.sendMessage(prefix + Main.fontcolor + "Durch den Teleport würden deine Daten beschädigt werden.");
-                            TextComponent msg0 = new TextComponent(prefix + Main.fontcolor + "Bitte begebe dich in die ");
-                            TextComponent msg1 = new TextComponent(Main.themecolor + playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName());
-                            msg1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/world return"));
-                            msg1.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,TextComponent.fromLegacyText("/world return")));
-                            TextComponent msg2 = new TextComponent(Main.fontcolor + " und versuche es erneut.");
-                            msg0.addExtra(msg1);
-                            msg0.addExtra(msg2);
-                            p.spigot().sendMessage(msg0);
+                            p.sendMessage(prefix + ChatColor.RED + "Du kannst die Welt nicht durch diesen Command betreten.");
                         }
                     } else {
                         p.sendMessage(prefix + ChatColor.RED + "Du kannst dich nicht in diese Welt teleportieren.");
@@ -683,7 +687,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
         Player p = event.getPlayer();
         if (playerCurrentWorld.containsKey(p.getUniqueId().toString())) {
             if (!p.getWorld().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName()) && !proceedPlayer.contains(p)) {
-                worldPlayerDataManager.get(event.getFrom()).storePlayerData(p);
+                worldPlayerDataManager.get(Bukkit.getWorld(event.getFrom().getName().replace("_nether", "").replace("_the_end", ""))).storePlayerData(p);
                 //playerCurrentWorld.put(p.getUniqueId().toString(), new Location(event.getFrom(),0,0,0));
                 p.getInventory().clear();
                 System.out.println(Main.consoleprefix + p.getName() + " betritt " + p.getWorld().getName() + " durch externen Teleport.");
@@ -921,7 +925,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
 
     public void saveInHistory() {
         for (Player a : Bukkit.getOnlinePlayers()) {
-            worldPlayerDataManager.get(a.getWorld()).storePlayerData(a);
+            worldPlayerDataManager.get(Bukkit.getWorld(a.getWorld().getName().replace("_nether","").replace("_the_end",""))).storePlayerData(a);
         }
         if (playerDataManagerHistory.size() == 3) {
             playerDataManagerHistory.remove(2);
