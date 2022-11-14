@@ -491,7 +491,9 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 }
                 if (w != null) {
                     if (w.getEnvironment() != World.Environment.NETHER && w.getEnvironment() != World.Environment.THE_END) {
-                        if (configuration.getBoolean(w.getName()+".teleport") || p.isOp()) {
+                        if (configuration.getBoolean(w.getName()+".teleport") || p.isOp()
+                                || w.getName().equals(Main.instance.getConfig().getString("world.lobby"))
+                                || w.getName().equals(Main.instance.getConfig().getString("world.testworld"))) {
                             if (p.getWorld().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName())) {
                                 for (Player a : Bukkit.getOnlinePlayers()) {
                                     if (a.getWorld().getName().equals(p.getWorld().getName()) || a.getWorld().getName().equals(p.getWorld().getName() + "_nether") || a.getWorld().getName().equals(p.getWorld().getName() + "_the_end")) {
