@@ -70,6 +70,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 if (!configuration.contains(worldName+".gamemode")) { configuration.set(worldName+".gamemode", Bukkit.getDefaultGameMode().toString()); }
                 if (!configuration.contains(worldName+".difficulty")) { configuration.set(worldName+".difficulty", Bukkit.getWorlds().get(0).getDifficulty().toString()); }
                 if (!configuration.contains(worldName+".slot")) { configuration.set(worldName+".slot", slot); }
+                if (!configuration.contains(worldName+".teleport")) { configuration.set(worldName + ".teleport", true); }
                 slot++;
                 if (Bukkit.getWorlds().get(0).getName().equals(worldName)) {
                     if (!configuration.contains(worldName + ".damage")) {
@@ -100,7 +101,6 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                         configuration.set(worldName+".difficulty","PEACEFUL");
                     } else {
                         if (!configuration.contains(worldName+".generator")) { configuration.set(worldName + ".generator", "DEFAULT"); }
-                        if (!configuration.contains(worldName+".teleport")) { configuration.set(worldName + ".teleport", true); }
                     }
                 }
                 configuration.save(file);
@@ -492,8 +492,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 if (w != null) {
                     if (w.getEnvironment() != World.Environment.NETHER && w.getEnvironment() != World.Environment.THE_END) {
                         if (configuration.getBoolean(w.getName()+".teleport") || p.isOp()
-                                || w.getName().equals(Main.instance.getConfig().getString("world.lobby"))
-                                || w.getName().equals(Main.instance.getConfig().getString("world.testworld"))) {
+                                || w.getName().equals(Main.instance.getConfig().getString("world.lobby"))) {
                             if (p.getWorld().getName().replace("_nether", "").replace("_the_end", "").equals(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName())) {
                                 for (Player a : Bukkit.getOnlinePlayers()) {
                                     if (a.getWorld().getName().equals(p.getWorld().getName()) || a.getWorld().getName().equals(p.getWorld().getName() + "_nether") || a.getWorld().getName().equals(p.getWorld().getName() + "_the_end")) {
