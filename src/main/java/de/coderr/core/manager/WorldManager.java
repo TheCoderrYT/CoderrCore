@@ -70,7 +70,9 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 if (!configuration.contains(worldName+".gamemode")) { configuration.set(worldName+".gamemode", Bukkit.getDefaultGameMode().toString()); }
                 if (!configuration.contains(worldName+".difficulty")) { configuration.set(worldName+".difficulty", Bukkit.getWorlds().get(0).getDifficulty().toString()); }
                 if (!configuration.contains(worldName+".slot")) { configuration.set(worldName+".slot", slot); }
-                if (!configuration.contains(worldName+".teleport")) { configuration.set(worldName + ".teleport", true); }
+                if (!main.getConfig().getString("world.lobby").equals(worldName)) {
+                    if (!configuration.contains(worldName + ".teleport")) { configuration.set(worldName + ".teleport", true); }
+                }
                 slot++;
                 if (Bukkit.getWorlds().get(0).getName().equals(worldName)) {
                     if (!configuration.contains(worldName + ".damage")) {
