@@ -23,8 +23,8 @@ public class TablistManager implements Listener
     {
         Main main = Main.instance;
         if(!main.getConfig().contains("tablist")) {
-            main.getConfig().set("tablist.header", "&t&lFlorian´s Servernetzwerk");
-            main.getConfig().set("tablist.footer","&8>>> &r&t&n&owww.foerster.cologne &r&8<<<");
+            main.getConfig().set("tablist.header", "&t&Minecraft Servernetzwerk");
+            main.getConfig().set("tablist.footer","&8>>> &r&t&n&opowered by CoderrCore &r&8<<<");
             main.saveConfig();
         }
 
@@ -264,7 +264,7 @@ public class TablistManager implements Listener
         }
     }
 
-    public String convertColorCode(String string) {
+    public static String convertColorCode(String string) {
         return string
                 .replace("&0",ChatColor.BLACK+"")
                 .replace("&1",ChatColor.DARK_BLUE+"")

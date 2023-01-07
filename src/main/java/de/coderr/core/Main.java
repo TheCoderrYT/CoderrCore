@@ -76,14 +76,15 @@ public final class Main extends JavaPlugin {
         header.add("* theme.fontcolor: Defines the default fontcolor of chat outputs and other gui text outputs. (Default: GRAY)");
         header.add("* world.testworld: Defines the worldname of the testworld, which can configurate in worlds.yml. (Default: testworld)");
         header.add("* world.lobby: Defines the worldname of the lobby, which can configurate in lobby.yml. (Default: lobby)");
-        header.add("* tablist.header: Defines the text above the playerlist in the tablist. (Default: &t&lFlorian´s Servernetzwerk");
-        header.add("* tablist.footer: Defines the text below the playerlist in the tablist. (Default: &8>>> &r&t&n&owww.foerster.cologne &r&8<<<");
+        header.add("* tablist.header: Defines the text above the playerlist in the tablist. It stands for the servername. (Default: &t&lMinecraft Servernetzwerk)");
+        header.add("* tablist.footer: Defines the text below the playerlist in the tablist. (Default: &8>>> &r&t&n&opowered by CoderrCore &r&8<<<)");
+        header.add("* tablist.titleOnJoin: Toggle if the Servername should display on join on the screen. (Default: false)");
         header.add("* settings.timeToAFK: Defines the time when a player should display as AFK when he don´t move. (Default: 5)");
-        header.add("* settings.healthVisible: Toggle if the health of a player should display above his head. (Default: true");
+        header.add("* settings.healthVisible: Toggle if the health of a player should display above his head. (Default: true)");
         header.add("* settings.sleepingMessage: Toggle if other players should inform when a player sleep. (Default: true");
         header.add("* settings.creeperBlockDamage: Toggle if creeper can destroy blocks. (Default: true)");
         header.add("* shutdown.enabled: Toggle if the server should shut down at a special time. (Deafult: false)");
-        header.add("* shutdown.time: Defines the time when the server shuts down if it is enabled. (Default: 24:00");
+        header.add("* shutdown.time: Defines the time when the server shuts down if it is enabled. (Default: 24:00)");
         header.add(" ------------------------------ ");
         StringBuilder headerString = new StringBuilder();
         for (String headerLine : header) {
