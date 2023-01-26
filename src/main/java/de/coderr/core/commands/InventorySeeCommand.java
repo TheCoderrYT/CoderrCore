@@ -19,7 +19,7 @@ public class InventorySeeCommand implements CommandExecutor, Listener
         if (sender instanceof Player)
         {
             Player p = (Player) sender;
-            if (p.hasPermission("tablist.command.invact") || p.hasPermission("tablist.command.invsee"))
+            if (p.hasPermission("coderrcore.command.invact") || p.hasPermission("coderrcore.command.invsee"))
             {
                 if (args.length == 1)
                 {
@@ -53,7 +53,7 @@ public class InventorySeeCommand implements CommandExecutor, Listener
                 }
                 else if (event.getWhoClicked() != a)
                 {
-                    if (!event.getWhoClicked().hasPermission("tablist.command.invact"))
+                    if (!event.getWhoClicked().hasPermission("coderrcore.command.invact"))
                     {
                         event.setCancelled(true);
                     }

@@ -244,21 +244,21 @@ public class TablistManager implements Listener
                         "|   minecraft-command-gamemode: true|");
                 permissionsConfig.set("admin.minecraft-command-gamemode",true);
                 permissionsConfig.set("admin.minecraft-command-give",true);
-                permissionsConfig.set("admin.tablist-command-rank",true);
-                permissionsConfig.set("admin.tablist-command-update",true);
-                permissionsConfig.set("admin.tablist-command-permissions",true);
-                permissionsConfig.set("admin.tablist-rank-admin",true);
-                permissionsConfig.set("admin.tablist-command-testworld",true);
-                permissionsConfig.set("admin.tablist-command-invact",true);
-                permissionsConfig.set("vip.tablist-command-update",true);
-                permissionsConfig.set("vip.tablist-command-permissions",true);
-                permissionsConfig.set("vip.tablist-rank-vip",true);
-                permissionsConfig.set("vip.tablist-command-testworld",true);
-                permissionsConfig.set("vip.tablist-command-invsee",true);
-                permissionsConfig.set("premium.tablist-command-permissions",true);
-                permissionsConfig.set("premium.tablist-rank-premium",true);
-                permissionsConfig.set("player.tablist-command-permissions",true);
-                permissionsConfig.set("player.tablist-rank-player",true);
+                permissionsConfig.set("admin.coderrcore-command-rank",true);
+                permissionsConfig.set("admin.coderrcore-command-update",true);
+                permissionsConfig.set("admin.coderrcore-command-permissions",true);
+                permissionsConfig.set("admin.coderrcore-rank-admin",true);
+                permissionsConfig.set("admin.coderrcore-command-testworld",true);
+                permissionsConfig.set("admin.coderrcore-command-invact",true);
+                permissionsConfig.set("vip.coderrcore-command-update",true);
+                permissionsConfig.set("vip.coderrcore-command-permissions",true);
+                permissionsConfig.set("vip.coderrcore-rank-vip",true);
+                permissionsConfig.set("vip.coderrcore-command-testworld",true);
+                permissionsConfig.set("vip.coderrcore-command-invsee",true);
+                permissionsConfig.set("premium.coderrcore-command-permissions",true);
+                permissionsConfig.set("premium.coderrcore-rank-premium",true);
+                permissionsConfig.set("player.coderrcore-command-permissions",true);
+                permissionsConfig.set("player.coderrcore-rank-player",true);
                 permissionsConfig.save(permissions);
             } catch (Exception ignored) { }
         }

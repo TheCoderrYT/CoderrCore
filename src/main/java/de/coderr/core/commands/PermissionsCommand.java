@@ -20,7 +20,7 @@ public class PermissionsCommand implements CommandExecutor
         {
             Player p = (Player) sender;
 
-            if (p.hasPermission("tablist.command.permissions"))
+            if (p.hasPermission("coderrcore.command.permissions"))
             {
                 Set<PermissionAttachmentInfo> permissions = new HashSet<PermissionAttachmentInfo>(p.getEffectivePermissions());
                 for (PermissionAttachmentInfo permissionInfo : permissions)

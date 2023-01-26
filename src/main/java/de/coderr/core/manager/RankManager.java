@@ -28,7 +28,7 @@ public class RankManager implements CommandExecutor, TabCompleter
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
         if (command.getName().equals("rank")) {
-            if (sender.hasPermission("tablist.command.rank") || !(sender instanceof Player)) {
+            if (sender.hasPermission("coderrcore.command.rank") || !(sender instanceof Player)) {
                 if (args.length >= 1) {
                     if (args[0].equalsIgnoreCase("set")) {
                         try {
