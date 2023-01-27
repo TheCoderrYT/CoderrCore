@@ -61,7 +61,7 @@ public class RankManager implements CommandExecutor, TabCompleter
                 sender.sendMessage(ChatColor.RED + "Du hast nicht die passenden Rechte!");
             }
         } else if (command.getName().equals("maintrance")) {
-            if (sender.hasPermission("tablist.rank.admin") || !(sender instanceof Player) || sender.isOp()) {
+            if (sender.hasPermission("coderrcore.rank.admin") || !(sender instanceof Player) || sender.isOp()) {
                 if (!Main.maintrance) {
                     for (Player a : Bukkit.getOnlinePlayers()) {
                         if (Main.rankManager.getRank(a.getUniqueId()) != 3) {
