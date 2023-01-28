@@ -190,14 +190,14 @@ public class WorldTeleportInventory implements Listener, CommandExecutor {
                 p.openInventory(inv);
             } else if (args.length == 1) {
                 if (args[0].equals("edit")) {
-                    if (p.isOp()) {
+                    if (p.hasPermission("coderrcore.rank.admin")) {
                         editingPlayers.add(p.getUniqueId());
                         p.openInventory(inv);
                     } else {
                         p.sendMessage(Main.ingameprefix + "Du hast nicht die passenden Rechte.");
                     }
                 } else if (args[0].equals("reset")) {
-                    if (p.isOp()) {
+                    if (p.hasPermission("coderrcore.rank.admin")) {
                         setupInv();
                         p.sendMessage(Main.ingameprefix + "Inventar wurde zurückgesetzt.");
                     } else {

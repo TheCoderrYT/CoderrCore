@@ -96,7 +96,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                         configuration.set(worldName + ".damage", false);
                         configuration.set(worldName + ".gamemode", "ADVENTURE");
                         configuration.set(worldName + ".difficulty", "PEACEFUL");
-                        configuration.set(worldName + ".hardcore", null);
+                        configuration.set(worldName + ".hardcore", false);
                         configuration.set(worldName + ".saturation", true);
                     } else if (main.getConfig().getString("world.testworld").equals(worldName)) {
                         configuration.set(worldName+".gamemode","CREATIVE");
@@ -252,7 +252,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                             w = null;
                         }
                     } else if (args[0].equalsIgnoreCase("info") && Bukkit.getWorld("info") == null) {
-                        p.sendMessage(prefix + Main.fontcolor + "/world [weltname|create|info] [weltname] [gamemode] [welttyp] [difficulty] [hardcore] [nether] [the_end] [damage] [saturation]");
+                        p.sendMessage(prefix + Main.fontcolor + "/world [weltname|create|info|undo] [weltname|spielername] [gamemode] [welttyp] [difficulty] [hardcore] [nether] [the_end] [damage] [saturation]");
                     } else if (args[0].equalsIgnoreCase("return") && Bukkit.getWorld("return") == null) {
                         if (p.isOp() || !playerCurrentWorld.get(p.getUniqueId().toString()).getWorld().getName().equals(p.getWorld().getName().replace("_nether", "").replace("_the_end", ""))) {
                             //p.teleport(worldPlayerDataManager.get(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld()).getRespawnLocation(p,false));
@@ -260,41 +260,6 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                             //p.teleport(worldPlayerDataManager.get(playerCurrentWorld.get(p.getUniqueId().toString()).getWorld()).getStoredLocation(p)); //Nicht möglich, da in worldchange-Methode die store-Methode erst nach dem Teleport ausgeführt wird
                         } else {
                             p.sendMessage(prefix + ChatColor.RED + "Dieser Command ist nur nach externen Teleports verfügbar.");
-                        }
-                    }
-                    else if (args[0].equalsIgnoreCase("undo")) {
-                        if (p.isOp()) {
-                            if (playerWorldHistory.size() > 0) {
-                                Map<Player, World> playerHistory = new HashMap<>();
-                                for (Player a : Bukkit.getOnlinePlayers()) {
-                                    playerHistory.put(a, Bukkit.getWorld(a.getWorld().getName().replace("_nether", "").replace("_the_end", "")));
-                                }
-                                boolean equals = true;
-                                for (Player tempPlayer : playerHistory.keySet()) {
-                                    if (!playerWorldHistory.get(playerWorldHistory.size() - 1).containsKey(tempPlayer)
-                                            || !playerWorldHistory.get(playerWorldHistory.size() - 1).containsValue(playerHistory.get(tempPlayer))) {
-                                        equals = false;
-                                    }
-                                }
-                                // TODO: Maybe Schwierigkeiten wenn Spieler joint
-                                if (!equals) {
-                                    proceedPlayer.add(p);
-                                    //worldPlayerDataManager.get(p.getWorld()).storePlayerData(p);
-                                    playerDataManagerHistory.get(playerDataManagerHistory.size() - 1).get(playerWorldHistory.get(playerWorldHistory.size() - 1).get(p)).setStoredPlayerData(p);
-                                    playerWorldHistory.remove(playerWorldHistory.size() - 1);
-                                    worldPlayerDataManager = playerDataManagerHistory.get(playerDataManagerHistory.size() - 1);
-                                    playerDataManagerHistory.remove(playerDataManagerHistory.size() - 1);
-                                    playerCurrentWorld.put(p.getUniqueId().toString(), worldPlayerDataManager.get(Bukkit.getWorld(p.getWorld().getName().replace("_nether","").replace("_the_end",""))).getRespawnLocation(p,false));
-                                    proceedPlayer.remove(p);
-                                    p.sendMessage(prefix + "Dein letzter Teleport wurde rückgängig gemacht.");
-                                } else {
-                                    p.sendMessage(prefix + ChatColor.RED + "Für dich ist kein Verlauf gespeichert.");
-                                }
-                            } else {
-                                p.sendMessage(prefix + ChatColor.RED + "Es sind keine Verläufe gespeichert.");
-                            }
-                        } else {
-                            p.sendMessage(prefix + ChatColor.RED + "Du hast nicht die passenden Rechte.");
                         }
                     } else {
                         if (args[0].equals(Main.instance.getConfig().getString("world.testworld"))) {
@@ -489,7 +454,50 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                         } else {
                             p.sendMessage(prefix + ChatColor.RED + "Diese Welt ist nicht geladen.");
                         }
+                    } else if (args[0].equalsIgnoreCase("undo")) {
+                        if (p.isOp()) {
+                            Player target = p;
+                            if(args.length == 2) {
+                                target = Bukkit.getPlayer(args[1]);
+                            }
+                            if(target != null) {
+                                if (playerWorldHistory.size() > 0) {
+                                    Map<Player, World> playerHistory = new HashMap<>();
+                                    for (Player a : Bukkit.getOnlinePlayers()) {
+                                        playerHistory.put(a, Bukkit.getWorld(a.getWorld().getName().replace("_nether", "").replace("_the_end", "")));
+                                    }
+                                    boolean equals = true;
+                                    for (Player tempPlayer : playerHistory.keySet()) {
+                                        if (!playerWorldHistory.get(playerWorldHistory.size() - 1).containsKey(tempPlayer)
+                                                || !playerWorldHistory.get(playerWorldHistory.size() - 1).containsValue(playerHistory.get(tempPlayer))) {
+                                            equals = false;
+                                        }
+                                    }
+                                    // TODO: Maybe Schwierigkeiten wenn Spieler joint
+                                    if (!equals) {
+                                        proceedPlayer.add(target);
+                                        //worldPlayerDataManager.get(p.getWorld()).storePlayerData(p);
+                                        playerDataManagerHistory.get(playerDataManagerHistory.size() - 1).get(playerWorldHistory.get(playerWorldHistory.size() - 1).get(target)).setStoredPlayerData(target);
+                                        playerWorldHistory.remove(playerWorldHistory.size() - 1);
+                                        worldPlayerDataManager = playerDataManagerHistory.get(playerDataManagerHistory.size() - 1);
+                                        playerDataManagerHistory.remove(playerDataManagerHistory.size() - 1);
+                                        playerCurrentWorld.put(target.getUniqueId().toString(), worldPlayerDataManager.get(Bukkit.getWorld(target.getWorld().getName().replace("_nether", "").replace("_the_end", ""))).getRespawnLocation(target, false));
+                                        proceedPlayer.remove(target);
+                                        target.sendMessage(prefix + "Dein letzter Teleport wurde rückgängig gemacht.");
+                                    } else {
+                                        p.sendMessage(prefix + ChatColor.RED + "Für den Spieler ist kein Verlauf gespeichert.");
+                                    }
+                                } else {
+                                    p.sendMessage(prefix + ChatColor.RED + "Es sind keine Verläufe gespeichert.");
+                                }
+                            } else {
+                                p.sendMessage(prefix + ChatColor.RED + "Spieler wurde nicht gefunden.");
+                            }
+                        } else {
+                            p.sendMessage(prefix + ChatColor.RED + "Du hast nicht die passenden Rechte.");
+                        }
                     }
+
                 }
                 if (w != null) {
                     if (w.getEnvironment() != World.Environment.NETHER && w.getEnvironment() != World.Environment.THE_END) {
