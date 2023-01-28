@@ -114,7 +114,7 @@ Nicht benötigte Eigenschaften können weggelassen werden und werden automatisch
 
 
 ## Ränge ##
-Spieler 4 verschiedene Ränge auf dem Server tragen: `Spieler` `Premium` `VIP` `Admin`<br>
+Spieler können 4 verschiedene Ränge auf dem Server tragen: `Spieler` `Premium` `VIP` `Admin`<br>
 Verschiedene Ränge ermöglichen es den Spielern verschiedene Berechtigungen zu geben. Die Berechtigungen, welche eine bestimmte Spielergruppe haben soll kann in der `permissions.yml` Datei eingestellt werden.<br>
 Ränge sind in der Tablist (Spielerliste, welche sich beim Drücken der Taste `TAB` erscheint), als auch als farbig markierte Namen über den Spielerköpfen und im Chat zu erkennen.<br>
 Die Farben und Ranglevel der Ränge sind:
