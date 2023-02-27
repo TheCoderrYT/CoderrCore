@@ -30,7 +30,7 @@ commands:
     usage: /l
   world:
     description: Teleport the player to the world
-    usage: /world [weltname|create|info] [weltname] [gamemode] [welttyp] [difficulty] [hardcore] [nether] [the_end] [damage] [saturation]
+    usage: /world [weltname|create|info|undo] [weltname|spielername] [gamemode] [welttyp] [difficulty] [hardcore] [nether] [the_end] [damage] [saturation]
   teleporter:
     description: Set a block as a teleporter
     usage: /teleporter [world|x] [y] [z]

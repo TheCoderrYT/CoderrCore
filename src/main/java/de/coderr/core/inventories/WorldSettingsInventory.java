@@ -78,7 +78,7 @@ public class WorldSettingsInventory implements Listener, CommandExecutor
         World world_nether = Bukkit.getWorld(world.getName()+"_nether");
         World world_the_end = Bukkit.getWorld(world.getName()+"_the_end");
         if (event.getClickedInventory() == invs.get(world)) {
-            if (p.hasPermission("tablist.rank.admin") || p.isOp()) {
+            if (p.hasPermission("coderrcore.rank.admin") || p.isOp()) {
                 if (event.getSlot() == 10) {
                     if (p.getWorld() == world) {
                         world.setSpawnLocation(p.getLocation());
