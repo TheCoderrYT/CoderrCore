@@ -150,3 +150,6 @@ player:
   coderrcore-rank-player: true
 ```
 Berechtigungen mit dem Wert `false` nach dem Doppelpunkt werden nicht berücksichtigt.
+
+
+## Positionen speichern ##
