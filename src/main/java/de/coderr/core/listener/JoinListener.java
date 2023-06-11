@@ -47,7 +47,7 @@ public class JoinListener implements Listener
                 a.sendMessage(Main.themecolor + p.getName() + " hat den Server betreten");
             }
             else {
-                a.sendMessage(Main.themecolor + "Willkommen auf " + ChatColor.BOLD + Main.instance.getConfig().getString("tablist.header"));
+                a.sendMessage(Main.themecolor + "Willkommen auf " + ChatColor.BOLD + TablistManager.convertColorCode(Main.instance.getConfig().getString("tablist.header")));
             }
         }
 
