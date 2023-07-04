@@ -58,6 +58,9 @@ Benutzung: `/worlds [edit|reset]`<br>
 ### /rank ###
 Benutzung: `/rank <set|remove> <Spielername> <Ranglevel>`<br>
 Setzt den Serverrang eines Spielers auf das entsprechende Level oder löscht den Rang, sodass dieser zu `Spieler` wird.
+### /spawn ###
+Benutzung `/spawn [force]`<br>
+Zeigt den Weltspawnpunkt der aktuellen Welt an und bietet Spielern mit OP-Rechten oder der `coderrcore.rank.admin`-Permission die Teleportation zu diesen Koordinaten an. In der Lobby wird jeder Spieler direkt zum Weltspawnpunkt teleportiert. 
 
 
 ## Mehrere Welten
