@@ -559,7 +559,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                                 }
 
                                 System.out.println(Main.consoleprefix + p.getName() + " joined " + w.getName());
-                                p.sendMessage(prefix + Main.themecolor + "Willkommen in der " + Main.themecolor + w.getName() + ".");
+                                p.sendMessage(prefix + Main.themecolor + "Willkommen in der " + Main.themecolor + w.getName() + "-Welt.");
 
                                 for (Player a : Bukkit.getOnlinePlayers()) {
                                     if (a.getWorld().getName().equals(w.getName()) || a.getWorld().getName().equals(w.getName() + "_nether") || a.getWorld().getName().equals(w.getName() + "_the_end")) {
@@ -596,6 +596,31 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
             }
             if (command.getName().equals("l")) {
                 Bukkit.dispatchCommand(p,"world "+Main.instance.getConfig().getString("world.lobby"));
+            }
+            if (command.getName().equals("spawn")) {
+                if (args.length == 1) {
+                    if (p.isOp() || p.hasPermission("coderrcore.rank.admin")) {
+                        if (Objects.equals(args[0], "force")) {
+                            p.teleport(new Location(p.getWorld(),p.getWorld().getSpawnLocation().getBlockX()+0.5,
+                                    p.getWorld().getSpawnLocation().getBlockY()+0.5,p.getWorld().getSpawnLocation().getBlockZ()+0.5));
+                        }
+                    } else {
+                        p.sendMessage(prefix + ChatColor.RED + "Du benötigst die entsprechenden Rechte.");
+                    }
+                } else {
+                    p.sendMessage(prefix + Main.fontcolor + "Die Spawnkoordinaten dieser Welt sind: " + Main.themecolor
+                            + p.getWorld().getSpawnLocation().getBlockX() + " "
+                            + p.getWorld().getSpawnLocation().getBlockY() + " "
+                            + p.getWorld().getSpawnLocation().getBlockZ() + " ");
+                    if (p.getWorld() == Bukkit.getWorld(Main.instance.getConfig().getString("world.lobby"))) {
+                        p.teleport(new Location(p.getWorld(),p.getWorld().getSpawnLocation().getBlockX()+0.5,
+                                p.getWorld().getSpawnLocation().getBlockY()+0.5,p.getWorld().getSpawnLocation().getBlockZ()+0.5));
+                    } else if (p.isOp()) {
+                        TextComponent c = new TextComponent(prefix + Main.fontcolor + "" + ChatColor.UNDERLINE+"Klicke hier zum Teleportieren");
+                        c.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/spawn force"));
+                        p.spigot().sendMessage(c);
+                    }
+                }
             }
         }
         return true;

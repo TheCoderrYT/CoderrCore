@@ -170,6 +170,7 @@ public final class Main extends JavaPlugin {
         Objects.requireNonNull(this.getCommand("worlds")).setExecutor(worldTeleportInventory);
         Objects.requireNonNull(this.getCommand("friend")).setExecutor(friendsInventory);
         Objects.requireNonNull(this.getCommand("maintrance")).setExecutor(rankManager);
+        Objects.requireNonNull(this.getCommand("spawn")).setExecutor(worldManager);
 
 
         afkListener.setRun(true);
