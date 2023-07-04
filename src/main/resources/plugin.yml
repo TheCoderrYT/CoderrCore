@@ -52,3 +52,6 @@ commands:
   pos:
     description: Send the Position of the Player in the chat
     usage: /pos <description>
+  spawn:
+    description: Show the Position of the Worldspawn
+    usage: /spawn [force]
