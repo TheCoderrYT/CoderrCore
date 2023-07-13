@@ -1,5 +1,5 @@
 # CoderrCore
-Dieses Plugin bildet die Basis für deinen Server.
+Dieses Plugin bildet die Basis für deinen Server. Für Minecraft Server ab der Version 1.18 welche die Spigot Server Software nutzen.
 ## Inhalt ##
 - Multiworldsystem (inklusive Lobby und Testwelt)
 - Rangsystem (inklusive Permissions)
