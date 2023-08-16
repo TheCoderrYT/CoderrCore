@@ -66,6 +66,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
             if (!configuration.contains(main.getConfig().getString("world.testworld"))) { configuration.set(main.getConfig().getString("world.testworld"),"Laden..."); }
             int slot = 10;
             for (String worldName : configuration.getKeys(false)) {
+                if (!configuration.contains(worldName + ".displayname")) { configuration.set(worldName + ".displayname", worldName); }
                 if (!configuration.contains(worldName + ".datafile")) { configuration.set(worldName + ".datafile", ""+worldName + "_data.yml"); }
                 if (!configuration.contains(worldName+".gamemode")) { configuration.set(worldName+".gamemode", Bukkit.getDefaultGameMode().toString()); }
                 if (!configuration.contains(worldName+".difficulty")) { configuration.set(worldName+".difficulty", Bukkit.getWorlds().get(0).getDifficulty().toString()); }
@@ -240,15 +241,20 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                 World w = null;
                 if (args.length == 0) {
                     if (p.getWorld() == Bukkit.getWorlds().get(0)) {
-                        p.sendMessage(prefix + ChatColor.RED + "Du bist bereits in der " + Main.themecolor + Bukkit.getWorlds().get(0).getName() + ChatColor.RED + ".");
+                        p.sendMessage(prefix + ChatColor.RED + "Du bist bereits in der " + Main.themecolor + configuration.getString(Bukkit.getWorlds().get(0).getName()+".displayname") + "-Welt" + ChatColor.RED + ".");
                     } else {
                         w = Bukkit.getWorlds().get(0);
                     }
                 } else if (args.length == 1) {
-                    if (Bukkit.getWorld(args[0]) != null) {
-                        w = Bukkit.getWorld(args[0]);
+                    if (Bukkit.getWorld(args[0]) != null || getWorldByDisplayname(args[0]) != null) {
+                        if (Bukkit.getWorld(args[0]) != null) {
+                            w = Bukkit.getWorld(args[0]);
+                        }
+                        if (getWorldByDisplayname(args[0]) != null) {
+                            w = Bukkit.getWorld(getWorldByDisplayname(args[0]));
+                        }
                         if (p.getWorld() == w) {
-                            p.sendMessage(prefix + ChatColor.RED + "Du bist bereits in der " + Main.themecolor + w.getName() + ChatColor.RED + ".");
+                            p.sendMessage(prefix + ChatColor.RED + "Du bist bereits in der " + Main.themecolor + configuration.getString(w.getName()+".displayname") + "-Welt" + ChatColor.RED + ".");
                             w = null;
                         }
                     } else if (args[0].equalsIgnoreCase("info") && Bukkit.getWorld("info") == null) {
@@ -631,8 +637,13 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
         List<String> list = new ArrayList<>();
         if (args.length == 1) {
             for (World w : Bukkit.getWorlds()) {
-                if (w.getEnvironment() != World.Environment.NETHER && w.getEnvironment() != World.Environment.THE_END) {
-                    list.add(w.getName());
+                if (w.getEnvironment() != World.Environment.NETHER && w.getEnvironment() != World.Environment.THE_END
+                        && ((configuration.getBoolean(w.getName()+".enabled")
+                        && configuration.getBoolean(w.getName()+".teleport"))
+                        || Main.instance.getConfig().getString("world.lobby").equalsIgnoreCase(w.getName())
+                        || Main.instance.getConfig().getString("world.testworld").equalsIgnoreCase(w.getName())
+                        || Bukkit.getWorlds().get(0).getName().equalsIgnoreCase(w.getName()))) {
+                    list.add(configuration.getString(w.getName()+".displayname"));
                 }
             }
         } else if (args.length == 2 && args[0].equalsIgnoreCase("disable")) {
@@ -1003,5 +1014,14 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
         } catch (Exception e) {
             System.out.println(Main.consoleprefix + "Aktuelle Welten der Spieler konnten nicht gespeichert werden.");
         }
+    }
+
+    public String getWorldByDisplayname(String displayname) {
+        for (String worldname : configuration.getKeys(false)) {
+            if (configuration.getString(worldname+".displayname").equalsIgnoreCase(displayname)) {
+                return worldname;
+            }
+        }
+        return null;
     }
 }

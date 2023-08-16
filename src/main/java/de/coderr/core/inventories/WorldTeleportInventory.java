@@ -31,13 +31,15 @@ public class WorldTeleportInventory implements Listener, CommandExecutor {
     private List<UUID> editingPlayers = new ArrayList<>();
     private File file = new File("plugins//CoderrCore//data//plugininventories.yml");
     private YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+    private YamlConfiguration worldsconfiguration;
 
     public WorldTeleportInventory() {
         if (!restoreInventory()) {
             setupInv();
         }
         File worldsfile = new File("plugins//CoderrCore//worlds.yml");
-        YamlConfiguration worldsconfiguration = YamlConfiguration.loadConfiguration(worldsfile);
+        worldsconfiguration = YamlConfiguration.loadConfiguration(worldsfile);
+
         for (World w : Bukkit.getWorlds()) {
             if (!w.getName().contains("_nether") && !w.getName().contains("_the_end")) {
                 slotWorldMap.put(worldsconfiguration.getInt(w.getName()+".slot"),w);
@@ -86,12 +88,12 @@ public class WorldTeleportInventory implements Listener, CommandExecutor {
                     if(worldsconfiguration.getBoolean(worldname + ".teleport")) {
                         if (Bukkit.getPluginManager().isPluginEnabled("CoderrKnockFFA")) {
                             if (!Bukkit.getPluginManager().getPlugin("CoderrKnockFFA").getConfig().getString("worlds." + worldname).equals("false")) {
-                                setItem(inv, worldsconfiguration.getInt(worldname + ".slot"), Material.STICK, Main.themecolor + worldname, ChatColor.GRAY + "(Rechtsklick zum Teleportieren)");
+                                setItem(inv, worldsconfiguration.getInt(worldname + ".slot"), Material.STICK, Main.themecolor + worldsconfiguration.getString(worldname+".displayname"), ChatColor.GRAY + "(Rechtsklick zum Teleportieren)");
                             } else {
-                                setItem(inv, worldsconfiguration.getInt(worldname + ".slot"), Material.GRASS_BLOCK, Main.themecolor + worldname, ChatColor.GRAY + "(Rechtsklick zum Teleportieren)");
+                                setItem(inv, worldsconfiguration.getInt(worldname + ".slot"), Material.GRASS_BLOCK, Main.themecolor + worldsconfiguration.getString(worldname+".displayname"), ChatColor.GRAY + "(Rechtsklick zum Teleportieren)");
                             }
                         } else {
-                            setItem(inv, worldsconfiguration.getInt(worldname + ".slot"), Material.GRASS_BLOCK, Main.themecolor + worldname, ChatColor.GRAY + "(Rechtsklick zum Teleportieren)");
+                            setItem(inv, worldsconfiguration.getInt(worldname + ".slot"), Material.GRASS_BLOCK, Main.themecolor + worldsconfiguration.getString(worldname+".displayname"), ChatColor.GRAY + "(Rechtsklick zum Teleportieren)");
                         }
                     }
                 }

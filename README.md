@@ -22,7 +22,7 @@ Benutzung: `/friend`<br>
 Öffnet ein Inventar zum Konfigurieren der Freunde. (Freundemenu)
 ### /invsee ###
 Benutzung: `/invsee <Spielername>`<br>
-Zeigt das aktuelle Inventar des angegebenen Spielers. Zum öffnen des Inventars wird die Berechtigung `coderrcore.command.invsee` oder `coderrcore.command.invact` vorrausgesetzt.<br>
+Zeigt das aktuelle Inventar des angegebenen Spielers. Zum Öffnen des Inventars wird die Berechtigung `coderrcore.command.invsee` oder `coderrcore.command.invact` vorrausgesetzt.<br>
 Mit dem Inventar kann interagiert werden, wenn der Spieler die Berechtigung `coderrcore.command.invact` besitzt.
 ### /l ###
 Benutzung: `/l`<br>
