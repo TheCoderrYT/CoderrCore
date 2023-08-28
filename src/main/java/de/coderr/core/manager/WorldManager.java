@@ -574,6 +574,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
                                         }
                                     }
                                 }
+                                store();
                             } else {
                                 p.sendMessage(prefix + Main.fontcolor + "Du bist nicht in der aktuell für dich gespeicherten Welt.");
                                 p.sendMessage(prefix + Main.fontcolor + "Durch den Teleport würden deine Daten beschädigt werden.");
@@ -1008,7 +1009,7 @@ public class WorldManager implements CommandExecutor, Listener, TabCompleter
             File file = new File("plugins//CoderrCore//data//player.yml");
             YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
             for (Map.Entry<String,Location> uuid : playerCurrentWorld.entrySet()) {
-                    configuration.set(uuid.getKey() + ".location", uuid.getValue().getWorld().getName()+","+uuid.getValue().getBlockX()+","+uuid.getValue().getBlockY()+","+uuid.getValue().getBlockZ());
+                configuration.set(uuid.getKey() + ".location", uuid.getValue().getWorld().getName()+","+uuid.getValue().getBlockX()+","+uuid.getValue().getBlockY()+","+uuid.getValue().getBlockZ());
             }
             configuration.save(file);
         } catch (Exception e) {
